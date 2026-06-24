@@ -5,152 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>HK - แม่บ้าน</title>
 <style>
-  :root {
-    --green: #1a7a4a; --green-light: #e8f5ee; --green-mid: #2d9e63;
-    --amber: #b45309; --amber-light: #fef3c7;
-    --red: #b91c1c; --red-light: #fee2e2;
-    --blue: #1d4ed8; --blue-light: #dbeafe;
-    --gray: #374151; --gray-light: #f3f4f6; --gray-mid: #9ca3af;
-    --border: #e5e7eb; --white: #ffffff;
-    --radius: 10px; --shadow: 0 2px 8px rgba(0,0,0,0.10);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Sarabun', sans-serif; background: #f0f4f0; color: var(--gray); font-size: 15px; }
-  
-  /* HEADER */
-  .header { background: var(--green); color: white; padding: 14px 16px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 17px; font-weight: 600; }
-  .header .sub { font-size: 12px; opacity: 0.8; }
-  .badge { background: rgba(255,255,255,0.25); border-radius: 20px; padding: 3px 10px; font-size: 12px; }
+:root{--green:#1a7a4a;--green-light:#e8f5ee;--green-mid:#2d9e63;--amber:#b45309;--amber-light:#fef3c7;--red:#b91c1c;--red-light:#fee2e2;--blue:#1d4ed8;--blue-light:#dbeafe;--gray:#374151;--gray-light:#f3f4f6;--gray-mid:#9ca3af;--border:#e5e7eb;--white:#fff;--radius:10px;--shadow:0 2px 8px rgba(0,0,0,.10)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:#f0f4f0;color:var(--gray);font-size:15px}
+.header{background:var(--green);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.badge{background:rgba(255,255,255,.25);border-radius:20px;padding:3px 10px;font-size:12px}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:56px;z-index:99}
+.tab{flex:1;text-align:center;padding:10px 4px;font-size:12px;color:var(--gray-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab.active{color:var(--green);border-color:var(--green);font-weight:600}
+.page{display:none;padding:14px}.page.active{display:block}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-head{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px}
+.card-body{padding:12px 14px}
+label{display:block;font-size:13px;color:var(--gray-mid);margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+select,input[type=number],textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--gray-light);outline:none}
+select:focus,input:focus,textarea:focus{border-color:var(--green);background:#fff}
+textarea{min-height:72px;resize:vertical}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;text-align:center;margin-top:10px}
+.btn-green{background:var(--green);color:#fff}.btn-amber{background:#d97706;color:#fff}.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:#fff;color:var(--green);border:1.5px solid var(--green);margin-top:6px}
 
-  /* TABS */
-  .tabs { display: flex; background: white; border-bottom: 2px solid var(--border); position: sticky; top: 56px; z-index: 99; }
-  .tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 12px; color: var(--gray-mid); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .2s; }
-  .tab.active { color: var(--green); border-color: var(--green); font-weight: 600; }
+/* ROOM QUEUE LIST */
+.room-q{background:#fff;border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:8px;border-left:4px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer}
+.room-q.wait{border-color:#dc2626}.room-q.doing{border-color:#db2777}.room-q.vc{border-color:#059669}.room-q.oc{border-color:#2563eb}
+.room-q-no{font-size:22px;font-weight:700;min-width:48px}
+.room-q-info{flex:1}
+.room-q-type{font-size:12px;color:var(--gray-mid)}
+.room-q-task{font-size:13px;font-weight:600;margin-top:2px}
+.spill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.sp-wait{background:#fee2e2;color:#991b1b}.sp-doing{background:#fce7f3;color:#9d174d}.sp-vc{background:#d1fae5;color:#065f46}.sp-oc{background:#dbeafe;color:#1e40af}
 
-  /* PAGES */
-  .page { display: none; padding: 14px; }
-  .page.active { display: block; }
+/* SUPPLY TABLE */
+.sup-table{width:100%;border-collapse:collapse;font-size:14px}
+.sup-table th{background:var(--gray-light);padding:8px 10px;text-align:left;font-size:12px;color:var(--gray-mid)}
+.sup-table td{padding:8px 10px;border-top:1px solid var(--border)}
+.sup-table input{width:64px;padding:6px 8px;text-align:center;border:1px solid var(--border);border-radius:6px;font-size:14px}
 
-  /* CARD */
-  .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; }
-  .card-head { padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-  .card-body { padding: 12px 14px; }
+/* DAMAGE */
+.dmg-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.dmg-item:last-child{border-bottom:none}
+.dmg-item label{margin:0;flex:1;font-size:14px;color:var(--gray)}
+.dmg-item input{width:56px;padding:6px 8px;text-align:center;border:1px solid var(--border);border-radius:6px;font-size:14px}
+.dmg-price{font-size:12px;color:var(--gray-mid);min-width:64px;text-align:right}
 
-  /* FORM */
-  label { display: block; font-size: 13px; color: var(--gray-mid); margin-bottom: 4px; margin-top: 10px; }
-  label:first-child { margin-top: 0; }
-  select, input[type=text], input[type=number], textarea {
-    width: 100%; border: 1px solid var(--border); border-radius: 8px;
-    padding: 10px 12px; font-size: 15px; font-family: inherit;
-    background: var(--gray-light); outline: none;
-  }
-  select:focus, input:focus, textarea:focus { border-color: var(--green); background: white; }
-  textarea { min-height: 72px; resize: vertical; }
+/* LAUNDRY */
+.lrow{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.lrow:last-child{border-bottom:none}
+.lrow span{font-size:14px;flex:1}
+.lrow input{width:64px;padding:6px 8px;text-align:center;border:1px solid var(--border);border-radius:6px;font-size:14px}
 
-  /* BUTTONS */
-  .btn { display: block; width: 100%; padding: 13px; border: none; border-radius: 8px; font-size: 15px; font-family: inherit; font-weight: 600; cursor: pointer; text-align: center; margin-top: 10px; transition: opacity .2s; }
-  .btn:active { opacity: .8; }
-  .btn-green { background: var(--green); color: white; }
-  .btn-amber { background: #d97706; color: white; }
-  .btn-red { background: var(--red); color: white; }
-  .btn-outline { background: white; color: var(--green); border: 1.5px solid var(--green); margin-top: 6px; }
-  .btn-sm { padding: 7px 14px; font-size: 13px; width: auto; display: inline-block; border-radius: 6px; }
+/* CHECKLIST */
+.ci{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.ci:last-child{border-bottom:none}
+.cb{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.ci.checked .cb{background:var(--green);border-color:var(--green);color:#fff}
+.ci span{font-size:14px}
 
-  /* STATUS GRID */
-  .room-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .room-btn { border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; background: white; font-size: 12px; font-family: inherit; transition: all .15s; }
-  .room-btn.vc   { background: #d1fae5; border-color: #059669; color: #065f46; }
-  .room-btn.vd   { background: #fef3c7; border-color: #d97706; color: #92400e; }
-  .room-btn.oc   { background: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
-  .room-btn.co   { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
-  .room-btn.ooo  { background: #f3f4f6; border-color: #9ca3af; color: #4b5563; }
-  .room-btn.doing{ background: #fce7f3; border-color: #db2777; color: #831843; }
-  .room-type { font-size: 10px; opacity: .7; }
+.clock-time{font-size:38px;font-weight:700;color:var(--green);letter-spacing:2px;text-align:center}
+.clock-date{font-size:13px;color:var(--gray-mid);text-align:center;margin-top:4px}
+.section-title{font-size:13px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.empty{text-align:center;padding:28px 16px;color:var(--gray-mid);font-size:14px}
+.loading{text-align:center;padding:20px;color:var(--gray-mid);font-size:13px}
 
-  /* STATUS LEGEND */
-  .legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .legend-item { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
-
-  /* ROOM DETAIL MODAL */
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; }
-  .overlay.open { display: flex; align-items: flex-end; }
-  .modal { background: white; border-radius: 16px 16px 0 0; width: 100%; padding: 20px 16px 32px; max-height: 92vh; overflow-y: auto; }
-  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
-  .modal h3 { font-size: 17px; margin-bottom: 12px; }
-
-  /* SUPPLY TABLE */
-  .supply-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  .supply-table th { background: var(--gray-light); padding: 8px 10px; text-align: left; font-size: 12px; color: var(--gray-mid); }
-  .supply-table td { padding: 8px 10px; border-top: 1px solid var(--border); }
-  .supply-table input[type=number] { width: 64px; padding: 6px 8px; text-align: center; }
-
-  /* DAMAGE ITEMS */
-  .dmg-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .dmg-item:last-child { border-bottom: none; }
-  .dmg-item label { margin: 0; flex: 1; font-size: 14px; color: var(--gray); }
-  .dmg-item input[type=number] { width: 56px; }
-  .dmg-price { font-size: 12px; color: var(--gray-mid); min-width: 60px; text-align: right; }
-
-  /* LAUNDRY */
-  .laundry-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .laundry-row:last-child { border-bottom: none; }
-  .laundry-row span { font-size: 14px; flex: 1; }
-  .laundry-row input { width: 64px; }
-
-  /* ALERT */
-  .alert { border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; }
-  .alert-green { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
-  .alert-red   { background: var(--red-light);   color: var(--red);   border: 1px solid #fecaca; }
-  .alert-amber { background: var(--amber-light);  color: var(--amber); border: 1px solid #fde68a; }
-
-  /* CLOCK */
-  .clock-display { text-align: center; padding: 16px; }
-  .clock-time { font-size: 38px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
-  .clock-date { font-size: 13px; color: var(--gray-mid); margin-top: 4px; }
-
-  /* CHECKLIST */
-  .check-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
-  .check-item:last-child { border-bottom: none; }
-  .check-box { width: 22px; height: 22px; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
-  .check-item.checked .check-box { background: var(--green); border-color: var(--green); color: white; }
-  .check-item span { font-size: 14px; }
-
-  .section-title { font-size: 13px; font-weight: 600; color: var(--gray-mid); text-transform: uppercase; letter-spacing: .5px; margin: 16px 0 8px; }
-
-  #msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; display: none; z-index: 999; white-space: nowrap; }
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}
+.overlay.open{display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:16px 16px 0 0;width:100%;padding:20px 16px 32px;max-height:92vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px}
+#msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;display:none;z-index:999;white-space:nowrap}
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
 <div class="header">
-  <div>
-    <div class="h1" style="font-size:17px;font-weight:600;">HK แม่บ้าน</div>
-    <div class="sub" id="header-sub">กรุณาเข้าสู่ระบบ</div>
-  </div>
-  <div class="badge" id="header-shift">-</div>
+  <div><div style="font-size:17px;font-weight:600">HK แม่บ้าน</div><div style="font-size:12px;opacity:.8" id="hd-sub">กรุณาเข้าสู่ระบบ</div></div>
+  <div class="badge" id="hd-shift">-</div>
 </div>
-
-<!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('home')">หน้าหลัก</div>
-  <div class="tab" onclick="switchTab('rooms')">ห้องพัก</div>
-  <div class="tab" onclick="switchTab('laundry')">ผ้าซัก</div>
-  <div class="tab" onclick="switchTab('checklist')">สิ้นวัน</div>
+  <div class="tab active" onclick="switchTab('home',this)">หน้าหลัก</div>
+  <div class="tab" onclick="switchTab('rooms',this)">ห้องพัก</div>
+  <div class="tab" onclick="switchTab('laundry',this)">ผ้าซัก</div>
+  <div class="tab" onclick="switchTab('checklist',this)">สิ้นวัน</div>
 </div>
 
-<!-- ======== PAGE: หน้าหลัก ======== -->
+<!-- HOME -->
 <div class="page active" id="page-home">
-
-  <!-- ล็อกอิน -->
   <div class="card" id="card-login">
     <div class="card-head">เข้าสู่ระบบ</div>
     <div class="card-body">
       <label>ชื่อแม่บ้าน</label>
-      <select id="sel-staff">
-        <option value="">-- เลือกชื่อ --</option>
-      </select>
+      <select id="sel-staff"><option value="">-- เลือกชื่อ --</option></select>
       <label>กะงาน</label>
       <select id="sel-shift">
         <option value="เช้า">กะเช้า (07:00 - 16:00)</option>
@@ -159,613 +102,409 @@
       <button class="btn btn-green" onclick="clockIn()">ลงชื่อเข้างาน</button>
     </div>
   </div>
-
-  <!-- เมื่อเข้าสู่ระบบแล้ว -->
-  <div id="card-loggedin" style="display:none;">
+  <div id="card-loggedin" style="display:none">
+    <div class="card"><div style="padding:16px"><div class="clock-time" id="clock">--:--</div><div class="clock-date" id="clock-date"></div></div></div>
     <div class="card">
-      <div class="clock-display">
-        <div class="clock-time" id="clock">--:--</div>
-        <div class="clock-date" id="clock-date"></div>
-      </div>
+      <div class="card-head">ห้องที่ต้องทำวันนี้</div>
+      <div class="card-body" id="my-rooms"><div class="loading">กำลังโหลด...</div></div>
     </div>
-
-    <div class="card">
-      <div class="card-head">ภาพรวมวันนี้</div>
-      <div class="card-body" id="daily-summary">
-        <div style="color:var(--gray-mid);font-size:13px;">กำลังโหลด...</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">เบิกของใช้ประจำวัน</div>
-      <div class="card-body">
-        <p style="font-size:13px;color:var(--gray-mid);margin-bottom:10px;">กรอกจำนวนที่เบิกออกจากสต็อก</p>
-        <table class="supply-table">
-          <thead><tr><th>รายการ</th><th>จำนวน</th></tr></thead>
-          <tbody>
-            <tr><td>ผ้าปูเตียง</td><td><input type="number" id="w-bed" min="0" value="0"></td></tr>
-            <tr><td>ปลอกหมอน</td><td><input type="number" id="w-pillow" min="0" value="0"></td></tr>
-            <tr><td>ปลอกผ้านวม</td><td><input type="number" id="w-duvet" min="0" value="0"></td></tr>
-            <tr><td>ผ้าขนหนู</td><td><input type="number" id="w-htowel" min="0" value="0"></td></tr>
-            <tr><td>ผ้าเช็ดตัว</td><td><input type="number" id="w-btowel" min="0" value="0"></td></tr>
-            <tr><td>ผ้าเช็ดเท้า</td><td><input type="number" id="w-ftowel" min="0" value="0"></td></tr>
-            <tr><td>น้ำดื่ม (ขวด)</td><td><input type="number" id="w-water" min="0" value="0"></td></tr>
-            <tr><td>น้ำผลไม้ (กล่อง)</td><td><input type="number" id="w-juice" min="0" value="0"></td></tr>
-          </tbody>
-        </table>
-        <button class="btn btn-outline" onclick="saveWithdrawal()">บันทึกการเบิก</button>
-      </div>
-    </div>
-
-    <button class="btn btn-red" onclick="clockOut()" style="margin:0 0 20px;">ลงชื่อออกงาน</button>
+    <button class="btn btn-red" onclick="clockOut()" style="margin:0 0 20px">ลงชื่อออกงาน</button>
   </div>
 </div>
 
-<!-- ======== PAGE: ห้องพัก ======== -->
+<!-- ROOMS -->
 <div class="page" id="page-rooms">
-  <div class="legend">
-    <span class="legend-item vc">VC ว่างสะอาด</span>
-    <span class="legend-item vd">VD รอทำ</span>
-    <span class="legend-item oc">OC มีแขก</span>
-    <span class="legend-item co">CO เช็คเอาท์</span>
-    <span class="legend-item doing">กำลังทำ</span>
-    <span class="legend-item ooo">OOO ปิดซ่อม</span>
-  </div>
-
-  <div class="section-title">ชั้น 2</div>
-  <div class="room-grid" id="grid-2"></div>
-  <div class="section-title">ชั้น 3</div>
-  <div class="room-grid" id="grid-3"></div>
-  <div class="section-title">ชั้น 4</div>
-  <div class="room-grid" id="grid-4"></div>
-  <div style="height:20px;"></div>
+  <div id="room-queue-list"><div class="loading">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
 </div>
 
-<!-- ======== PAGE: ผ้าซัก ======== -->
+<!-- LAUNDRY -->
 <div class="page" id="page-laundry">
   <div class="card">
     <div class="card-head">ส่งผ้าซัก</div>
     <div class="card-body">
-      <div class="laundry-row"><span>ผ้าปูเตียง</span><input type="number" id="ls-bed" min="0" value="0"></div>
-      <div class="laundry-row"><span>ปลอกหมอน</span><input type="number" id="ls-pillow" min="0" value="0"></div>
-      <div class="laundry-row"><span>ปลอกผ้านวม</span><input type="number" id="ls-duvet" min="0" value="0"></div>
-      <div class="laundry-row"><span>ผ้าขนหนู</span><input type="number" id="ls-htowel" min="0" value="0"></div>
-      <div class="laundry-row"><span>ผ้าเช็ดตัว</span><input type="number" id="ls-btowel" min="0" value="0"></div>
-      <div class="laundry-row"><span>ผ้าเช็ดเท้า</span><input type="number" id="ls-ftowel" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าปูเตียง</span><input type="number" id="ls-bed" min="0" value="0"></div>
+      <div class="lrow"><span>ปลอกหมอน</span><input type="number" id="ls-pillow" min="0" value="0"></div>
+      <div class="lrow"><span>ปลอกผ้านวม</span><input type="number" id="ls-duvet" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าขนหนู</span><input type="number" id="ls-htowel" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าเช็ดตัว</span><input type="number" id="ls-btowel" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าเช็ดเท้า</span><input type="number" id="ls-ftowel" min="0" value="0"></div>
       <button class="btn btn-amber" onclick="saveLaundry('ส่ง')">บันทึกส่งซัก</button>
     </div>
   </div>
-
   <div class="card">
     <div class="card-head">รับผ้าคืน</div>
     <div class="card-body">
-      <div class="laundry-row"><span>ผ้าปูเตียง</span><input type="number" id="lr-bed" min="0" value="0"></div>
-      <div class="laundry-row"><span>ปลอกหมอน</span><input type="number" id="lr-pillow" min="0" value="0"></div>
-      <div class="laundry-row"><span>ปลอกผ้านวม</span><input type="number" id="lr-duvet" min="0" value="0"></div>
-      <div class="laundry-row"><span>ผ้าขนหนู</span><input type="number" id="lr-htowel" min="0" value="0"></div>
-      <div class="laundry-row"><span>ผ้าเช็ดตัว</span><input type="number" id="lr-btowel" min="0" value="0"></div>
-      <div class="laundry-row"><span>ผ้าเช็ดเท้า</span><input type="number" id="lr-ftowel" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าปูเตียง</span><input type="number" id="lr-bed" min="0" value="0"></div>
+      <div class="lrow"><span>ปลอกหมอน</span><input type="number" id="lr-pillow" min="0" value="0"></div>
+      <div class="lrow"><span>ปลอกผ้านวม</span><input type="number" id="lr-duvet" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าขนหนู</span><input type="number" id="lr-htowel" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าเช็ดตัว</span><input type="number" id="lr-btowel" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าเช็ดเท้า</span><input type="number" id="lr-ftowel" min="0" value="0"></div>
       <button class="btn btn-green" onclick="saveLaundry('รับ')">บันทึกรับผ้าคืน</button>
     </div>
   </div>
 </div>
 
-<!-- ======== PAGE: Checklist สิ้นวัน ======== -->
+<!-- CHECKLIST -->
 <div class="page" id="page-checklist">
-  <div class="card">
-    <div class="card-head">Checklist สิ้นวัน</div>
-    <div class="card-body" id="checklist-items">
-      <!-- สร้าง dynamic -->
-    </div>
-  </div>
-
+  <div class="card"><div class="card-head">Checklist สิ้นวัน</div><div class="card-body" id="cl-items"></div></div>
   <div class="card">
     <div class="card-head">สต็อกคงเหลือ</div>
     <div class="card-body">
-      <table class="supply-table">
-        <thead><tr><th>รายการ</th><th>คงเหลือ</th><th>จุดสั่งซื้อ</th></tr></thead>
+      <table class="sup-table">
+        <thead><tr><th>รายการ</th><th>คงเหลือ</th><th>จุดสั่ง</th></tr></thead>
         <tbody>
           <tr><td>น้ำดื่ม (แพ็ค)</td><td><input type="number" id="sk-water" min="0" value="0"></td><td><input type="number" id="sp-water" min="0" value="5"></td></tr>
           <tr><td>น้ำผลไม้ (กล่อง)</td><td><input type="number" id="sk-juice" min="0" value="0"></td><td><input type="number" id="sp-juice" min="0" value="10"></td></tr>
-          <tr><td>น้ำยาถูพื้น (ลิตร)</td><td><input type="number" id="sk-floor" min="0" value="0"></td><td><input type="number" id="sp-floor" min="0" value="2"></td></tr>
+          <tr><td>น้ำยาถูพื้น</td><td><input type="number" id="sk-floor" min="0" value="0"></td><td><input type="number" id="sp-floor" min="0" value="2"></td></tr>
           <tr><td>น้ำยาล้างห้องน้ำ</td><td><input type="number" id="sk-bath" min="0" value="0"></td><td><input type="number" id="sp-bath" min="0" value="2"></td></tr>
-          <tr><td>น้ำยาเช็ดกระจก</td><td><input type="number" id="sk-glass" min="0" value="0"></td><td><input type="number" id="sp-glass" min="0" value="1"></td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
-  <div class="card">
-    <div class="card-head">ปัญหาที่พบวันนี้</div>
-    <div class="card-body">
-      <textarea id="daily-issue" placeholder="ระบุปัญหาที่พบ (ถ้ามี)"></textarea>
-    </div>
-  </div>
-
+  <div class="card"><div class="card-head">ปัญหาที่พบวันนี้</div><div class="card-body"><textarea id="daily-issue" placeholder="ระบุปัญหา (ถ้ามี)"></textarea></div></div>
   <button class="btn btn-green" onclick="submitChecklist()">ส่งรายงานสิ้นวัน</button>
-  <div style="height:20px;"></div>
+  <div style="height:20px"></div>
 </div>
 
-<!-- ======== ROOM MODAL ======== -->
-<div class="overlay" id="room-overlay" onclick="closeModal(event)">
+<!-- ROOM MODAL -->
+<div class="overlay" id="room-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h3 id="modal-title">ห้อง 101</h3>
-
-    <div class="card-body" style="padding:0;">
-      <label>สถานะห้อง</label>
-      <select id="modal-status">
-        <option value="VD">VD - รอทำความสะอาด</option>
-        <option value="กำลังทำ">กำลังทำอยู่</option>
-        <option value="VC">VC - ทำเสร็จ พร้อมขาย</option>
-        <option value="OC">OC - มีแขกพักอยู่</option>
-        <option value="CO">CO - เช็คเอาท์แล้ว</option>
-        <option value="OOO">OOO - ปิดซ่อม</option>
-      </select>
-
-      <div id="supply-section" style="margin-top:12px;">
-        <label style="font-weight:600;color:var(--gray);margin-bottom:6px;">ของใช้ในห้อง (แก้ไขได้)</label>
-        <table class="supply-table">
-          <thead><tr><th>รายการ</th><th>ค่าปกติ</th><th>ใช้จริง</th></tr></thead>
-          <tbody id="modal-supply-rows"></tbody>
-        </table>
-      </div>
-
-      <label style="margin-top:12px;">หมายเหตุ</label>
-      <textarea id="modal-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></textarea>
-
-      <button class="btn btn-green" style="margin-top:12px;" onclick="saveRoomStatus()">บันทึกสถานะ</button>
-
-      <button class="btn btn-red" style="margin-top:6px;" onclick="openDamageReport()">แจ้งความเสียหาย</button>
+    <h3 id="modal-title" style="font-size:17px;margin-bottom:12px"></h3>
+    <label>สถานะห้อง</label>
+    <select id="modal-status">
+      <option value="กำลังทำ">กำลังทำความสะอาด</option>
+      <option value="VC">VC - ทำเสร็จ พร้อมขาย</option>
+      <option value="OC">OC - แขกพักต่อ เสร็จแล้ว</option>
+      <option value="OOO">OOO - ปิดซ่อม</option>
+    </select>
+    <div style="margin-top:12px">
+      <label style="font-weight:600;color:var(--gray);margin-bottom:6px">ของใช้ในห้อง (แก้ไขได้)</label>
+      <table class="sup-table">
+        <thead><tr><th>รายการ</th><th>ค่าปกติ</th><th>ใช้จริง</th></tr></thead>
+        <tbody id="modal-sup"></tbody>
+      </table>
     </div>
+    <label>หมายเหตุ</label>
+    <textarea id="modal-note" placeholder="หมายเหตุ (ถ้ามี)"></textarea>
+    <button class="btn btn-green" onclick="saveRoomStatus()">บันทึกสถานะ</button>
+    <button class="btn btn-red" style="margin-top:6px" onclick="openDmgModal()">แจ้งความเสียหาย</button>
   </div>
 </div>
 
-<!-- ======== DAMAGE MODAL ======== -->
-<div class="overlay" id="damage-overlay" onclick="closeDamageModal(event)">
+<!-- DAMAGE MODAL -->
+<div class="overlay" id="dmg-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h3>แจ้งความเสียหาย - ห้อง <span id="dmg-room-no"></span></h3>
-    <p style="font-size:13px;color:var(--gray-mid);margin-bottom:12px;">เลือกรายการที่เสียหาย และกรอกจำนวน</p>
-
-    <div id="damage-items-list"></div>
-
-    <div style="background:var(--red-light);border-radius:8px;padding:10px 12px;margin-top:10px;">
-      <div style="font-size:13px;color:var(--red);">ยอดรวมค่าเสียหาย</div>
-      <div style="font-size:22px;font-weight:700;color:var(--red);">฿<span id="dmg-total">0</span></div>
+    <h3 style="font-size:17px;margin-bottom:4px">แจ้งความเสียหาย - ห้อง <span id="dmg-room-no"></span></h3>
+    <p style="font-size:13px;color:var(--gray-mid);margin-bottom:12px">เลือกรายการและกรอกจำนวน</p>
+    <div id="dmg-items-list"></div>
+    <div style="background:var(--red-light);border-radius:8px;padding:10px 12px;margin-top:10px">
+      <div style="font-size:13px;color:var(--red)">ยอดรวม</div>
+      <div style="font-size:22px;font-weight:700;color:var(--red)">฿<span id="dmg-total">0</span></div>
     </div>
-
-    <label>รายละเอียดเพิ่มเติม</label>
+    <label>รายละเอียด</label>
     <textarea id="dmg-detail" placeholder="อธิบายสภาพความเสียหาย..."></textarea>
-
-    <button class="btn btn-red" style="margin-top:12px;" onclick="submitDamage()">ส่งรายงานความเสียหาย</button>
-    <button class="btn btn-outline" onclick="document.getElementById('damage-overlay').classList.remove('open')">ยกเลิก</button>
+    <button class="btn btn-red" style="margin-top:12px" onclick="submitDamage()">ส่งรายงานความเสียหาย</button>
+    <button class="btn btn-outline" onclick="document.getElementById('dmg-overlay').classList.remove('open')">ยกเลิก</button>
   </div>
 </div>
 
 <div id="msg"></div>
 
 <script>
-// ====== CONFIG ======
-const API_URL = 'https://script.google.com/macros/s/AKfycbzarv3ANFYpwdxOLLecMidn64_gxUVfao6XHdrWVRvNY3thuxskvU5RMs0Jwg3PQKg/exec'; // ใส่ URL หลัง deploy
-
-// ====== STATE ======
-let state = {
-  staff: '', shift: '', loggedIn: false,
-  rooms: [], currentRoom: null, damageItems: []
-};
-
-const ROOM_DATA = {
-  201:{type:'DLT',floor:2}, 202:{type:'DLT',floor:2}, 203:{type:'DLK',floor:2},
-  204:{type:'DLF',floor:2}, 205:{type:'DLK',floor:2}, 206:{type:'DLK',floor:2},
-  207:{type:'DLT',floor:2}, 208:{type:'DLK',floor:2}, 209:{type:'DLK',floor:2},
-  310:{type:'DLK',floor:3}, 311:{type:'DLK',floor:3}, 312:{type:'DLK',floor:3},
-  313:{type:'DLK',floor:3}, 314:{type:'DLF',floor:3}, 315:{type:'DLK',floor:3},
-  316:{type:'DLK',floor:3}, 317:{type:'DLK',floor:3}, 318:{type:'DLK',floor:3},
-  319:{type:'DLK',floor:3}, 320:{type:'DLK',floor:3},
-  421:{type:'DLT',floor:4}, 422:{type:'DLT',floor:4}, 423:{type:'DLT',floor:4},
-  424:{type:'DLK',floor:4}, 425:{type:'DLK',floor:4}, 426:{type:'DLK',floor:4},
-  427:{type:'DLT',floor:4}, 428:{type:'DLK',floor:4}, 429:{type:'DLT',floor:4},
-  430:{type:'DLK',floor:4}, 431:{type:'DLK',floor:4}, 432:{type:'Family Suite',floor:4},
-};
-
+const API = 'https://script.google.com/macros/s/AKfycbyg5TFwH4nZZXzdNF0Wr7ltiH5kLg83UTb2iUI4bQrdlZs9jwppd3PLVAJRkYV0PORl-g/exec';
 const DEFAULTS = {
-  DLK:  {ผ้าปูเตียง:1, ปลอกหมอน:4, ปลอกผ้านวม:1, ผ้าขนหนู:2, ผ้าเช็ดตัว:2, ผ้าเช็ดเท้า:1, น้ำดื่ม:3, น้ำผลไม้:2},
-  DLT:  {ผ้าปูเตียง:2, ปลอกหมอน:4, ปลอกผ้านวม:2, ผ้าขนหนู:2, ผ้าเช็ดตัว:2, ผ้าเช็ดเท้า:1, น้ำดื่ม:3, น้ำผลไม้:2},
-  DLF:  {ผ้าปูเตียง:2, ปลอกหมอน:4, ปลอกผ้านวม:1, ผ้าขนหนู:2, ผ้าเช็ดตัว:2, ผ้าเช็ดเท้า:1, น้ำดื่ม:3, น้ำผลไม้:2},
-  'Family Suite': {ผ้าปูเตียง:2, ปลอกหมอน:8, ปลอกผ้านวม:2, ผ้าขนหนู:4, ผ้าเช็ดตัว:4, ผ้าเช็ดเท้า:2, น้ำดื่ม:6, น้ำผลไม้:4},
+  DLK:{ผ้าปูเตียง:1,ปลอกหมอน:4,ปลอกผ้านวม:1,ผ้าขนหนู:2,ผ้าเช็ดตัว:2,ผ้าเช็ดเท้า:1,น้ำดื่ม:3,น้ำผลไม้:2},
+  DLT:{ผ้าปูเตียง:2,ปลอกหมอน:4,ปลอกผ้านวม:2,ผ้าขนหนู:2,ผ้าเช็ดตัว:2,ผ้าเช็ดเท้า:1,น้ำดื่ม:3,น้ำผลไม้:2},
+  DLF:{ผ้าปูเตียง:2,ปลอกหมอน:4,ปลอกผ้านวม:1,ผ้าขนหนู:2,ผ้าเช็ดตัว:2,ผ้าเช็ดเท้า:1,น้ำดื่ม:3,น้ำผลไม้:2},
+  'Suite':{ผ้าปูเตียง:2,ปลอกหมอน:8,ปลอกผ้านวม:2,ผ้าขนหนู:4,ผ้าเช็ดตัว:4,ผ้าเช็ดเท้า:2,น้ำดื่ม:6,น้ำผลไม้:4},
 };
-
-const DAMAGE_ITEMS = [
-  {id:1,รายการ:'King Duvet (ผ้านวมเตียงเดี่ยว)',ราคา:1200},
-  {id:2,รายการ:'Twin Duvet (ผ้านวมเตียงคู่)',ราคา:1000},
-  {id:3,รายการ:'Single Duvet Cover (ปลอกผ้านวมเดี่ยว)',ราคา:1200},
-  {id:4,รายการ:'Twin Duvet Cover (ปลอกผ้านวมคู่)',ราคา:1000},
-  {id:5,รายการ:'King Bed Sheet (ผ้าปูเตียงเดี่ยว)',ราคา:1000},
-  {id:6,รายการ:'Twin Bed Sheet (ผ้าปูเตียงคู่)',ราคา:800},
-  {id:7,รายการ:'Pillow (หมอน)',ราคา:500},
-  {id:8,รายการ:'Pillowcase (ปลอกหมอน)',ราคา:200},
-  {id:9,รายการ:'Bath Towel (ผ้าเช็ดตัว)',ราคา:300},
-  {id:10,รายการ:'Hand Towel (ผ้าเช็ดมือ)',ราคา:200},
-  {id:11,รายการ:'Bath Mat (ผ้าเช็ดเท้า)',ราคา:200},
-  {id:12,รายการ:'King Bed Skirt (ผ้าระบายเดี่ยว)',ราคา:1200},
-  {id:13,รายการ:'Twin Bed Skirt (ผ้าระบายคู่)',ราคา:1000},
-  {id:14,รายการ:'Clothes Hangers (ไม้แขวนเสื้อ)',ราคา:80},
-  {id:15,รายการ:'Hair Dryer (ไดร์เป่าผม)',ราคา:1000},
-  {id:16,รายการ:'Torch (ไฟฉาย)',ราคา:200},
-  {id:17,รายการ:'Bathroom Trash Can (ถังขยะห้องน้ำ)',ราคา:200},
-  {id:18,รายการ:'Room Trash Can (ถังขยะห้องพัก)',ราคา:500},
-  {id:19,รายการ:'AC Remote (รีโมทแอร์)',ราคา:900},
-  {id:20,รายการ:'TV Remote (รีโมททีวี)',ราคา:500},
-  {id:21,รายการ:'Drinking Glass (แก้วน้ำ)',ราคา:60},
-  {id:22,รายการ:'Key Card (คีย์การ์ด)',ราคา:300},
-  {id:23,รายการ:'Weighing Scale (เครื่องชั่ง)',ราคา:1000},
-  {id:24,รายการ:'Spoon & Fork (ช้อนส้อม)',ราคา:100},
-  {id:25,รายการ:'Bowl (ชาม)',ราคา:80},
-  {id:26,รายการ:'Plate (จาน)',ราคา:80},
-  {id:27,รายการ:'Kettle (กาน้ำร้อน)',ราคา:1000},
+const DMG_ITEMS = [
+  {id:1,n:'King Duvet (ผ้านวมเดี่ยว)',p:1200},{id:2,n:'Twin Duvet (ผ้านวมคู่)',p:1000},
+  {id:3,n:'Single Duvet Cover (ปลอกผ้านวมเดี่ยว)',p:1200},{id:4,n:'Twin Duvet Cover (ปลอกผ้านวมคู่)',p:1000},
+  {id:5,n:'King Bed Sheet (ผ้าปูเดี่ยว)',p:1000},{id:6,n:'Twin Bed Sheet (ผ้าปูคู่)',p:800},
+  {id:7,n:'Pillow (หมอน)',p:500},{id:8,n:'Pillowcase (ปลอกหมอน)',p:200},
+  {id:9,n:'Bath Towel (ผ้าเช็ดตัว)',p:300},{id:10,n:'Hand Towel (ผ้าเช็ดมือ)',p:200},
+  {id:11,n:'Bath Mat (ผ้าเช็ดเท้า)',p:200},{id:12,n:'King Bed Skirt',p:1200},
+  {id:13,n:'Twin Bed Skirt',p:1000},{id:14,n:'Clothes Hangers (ไม้แขวนเสื้อ)',p:80},
+  {id:15,n:'Hair Dryer (ไดร์)',p:1000},{id:16,n:'Torch (ไฟฉาย)',p:200},
+  {id:17,n:'Bathroom Trash Can',p:200},{id:18,n:'Room Trash Can',p:500},
+  {id:19,n:'AC Remote (รีโมทแอร์)',p:900},{id:20,n:'TV Remote (รีโมททีวี)',p:500},
+  {id:21,n:'Drinking Glass (แก้วน้ำ)',p:60},{id:22,n:'Key Card (คีย์การ์ด)',p:300},
+  {id:23,n:'Weighing Scale (เครื่องชั่ง)',p:1000},{id:24,n:'Spoon & Fork (ช้อนส้อม)',p:100},
+  {id:25,n:'Bowl (ชาม)',p:80},{id:26,n:'Plate (จาน)',p:80},{id:27,n:'Kettle (กาน้ำร้อน)',p:1000},
 ];
-
-const STAFF_LIST = ['ทวีป','สมัย','รัตนาภรณ์','อุมาพร'];
-
+const STAFF_LIST = ['แม่บ้าน 1','แม่บ้าน 2','แม่บ้าน 3','แม่บ้าน 4'];
 const CHECKLIST = [
-  'ห้อง Check Out ทำความสะอาดครบทุกห้อง',
+  'ห้อง CO ทำความสะอาดครบทุกห้อง',
+  'ห้อง OC เปลี่ยนผ้าและเติมของครบ',
   'ห้อง Check In พร้อมขายก่อน 14.00 น.',
   'พื้นที่ส่วนกลาง Lobby / ทางเดิน / ลิฟต์ สะอาด',
   'ห้องน้ำส่วนกลางสะอาด',
   'ห้อง VIP (432) ตรวจเรียบร้อยแล้ว',
-  'เติมน้ำดื่มครบทุกห้อง',
-  'เติมมินิบาร์ (น้ำผลไม้) ครบทุกห้อง',
+  'เติมน้ำดื่มและน้ำผลไม้ครบทุกห้อง',
   'ส่งผ้าซักเรียบร้อย',
   'รับผ้าซักคืนและตรวจนับแล้ว',
-  'ตรวจสอบอุปกรณ์ทำความสะอาดเรียบร้อย',
   'ตรวจสต็อกของใช้และบันทึกแล้ว',
 ];
 
-// ====== INIT ======
+let state = { loggedIn:false, maid:'', shift:'' };
+let queue = [];
+let curRoom = null;
+let checkState = {};
+
 window.onload = () => {
   loadStaff();
-  buildRoomGrids();
   buildChecklist();
-  buildDamageList();
+  buildDmgList();
   startClock();
-  // โหลดสถานะห้องถ้าล็อกอินแล้ว
-  loadRoomStatuses();
 };
-
-function loadStaff() {
-  const sel = document.getElementById('sel-staff');
-  STAFF_LIST.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
-    sel.appendChild(opt);
-  });
-}
 
 function startClock() {
   const tick = () => {
-    const now = new Date();
-    document.getElementById('clock').textContent =
-      now.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
-    document.getElementById('clock-date').textContent =
-      now.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const n = new Date();
+    document.getElementById('clock').textContent = n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('clock-date').textContent = n.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   };
-  tick(); setInterval(tick, 1000);
+  tick(); setInterval(tick,1000);
 }
 
-// ====== LOGIN ======
-function clockIn() {
-  const name = document.getElementById('sel-staff').value;
+function loadStaff() {
+  const sel = document.getElementById('sel-staff');
+  STAFF_LIST.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+}
+
+// ===== LOGIN =====
+async function clockIn() {
+  const maid = document.getElementById('sel-staff').value;
   const shift = document.getElementById('sel-shift').value;
-  if(!name) { showMsg('กรุณาเลือกชื่อแม่บ้าน'); return; }
-
-  state.staff = name; state.shift = shift; state.loggedIn = true;
-
-  document.getElementById('header-sub').textContent = name;
-  document.getElementById('header-shift').textContent = 'กะ' + shift;
+  if(!maid){ showMsg('กรุณาเลือกชื่อ'); return; }
+  state = { loggedIn:true, maid, shift };
+  document.getElementById('hd-sub').textContent = maid;
+  document.getElementById('hd-shift').textContent = 'กะ'+shift;
   document.getElementById('card-login').style.display = 'none';
   document.getElementById('card-loggedin').style.display = 'block';
-
-  updateDailySummary();
-  postAPI({ action:'clockIn', ชื่อแม่บ้าน: name, กะ: shift });
+  await postAPI({ action:'clockIn', maid, shift });
+  await loadQueue();
   showMsg('ลงชื่อเข้างานสำเร็จ');
 }
 
-function clockOut() {
+async function clockOut() {
   if(!confirm('ยืนยันลงชื่อออกงาน?')) return;
-  postAPI({ action:'clockOut', ชื่อแม่บ้าน: state.staff, กะ: state.shift });
-  showMsg('ลงชื่อออกงานเรียบร้อย');
   state.loggedIn = false;
   document.getElementById('card-login').style.display = 'block';
   document.getElementById('card-loggedin').style.display = 'none';
-  document.getElementById('header-sub').textContent = 'กรุณาเข้าสู่ระบบ';
-  document.getElementById('header-shift').textContent = '-';
+  document.getElementById('hd-sub').textContent = 'กรุณาเข้าสู่ระบบ';
+  document.getElementById('hd-shift').textContent = '-';
+  showMsg('ลงชื่อออกงานแล้ว');
 }
 
-// ====== ROOMS ======
-let roomStatuses = {};
-
-function buildRoomGrids() {
-  const grids = {2: document.getElementById('grid-2'), 3: document.getElementById('grid-3'), 4: document.getElementById('grid-4')};
-  Object.entries(ROOM_DATA).forEach(([no, info]) => {
-    const btn = document.createElement('button');
-    btn.className = 'room-btn vd';
-    btn.id = 'room-' + no;
-    btn.innerHTML = `<div style="font-weight:700;">${no}</div><div class="room-type">${info.type}</div>`;
-    btn.onclick = () => openRoomModal(parseInt(no));
-    grids[info.floor].appendChild(btn);
-  });
+// ===== QUEUE =====
+async function loadQueue() {
+  try {
+    const data = await fetch(API+'?action=getQueue').then(r=>r.json());
+    queue = Array.isArray(data) ? data : [];
+    renderMyRooms();
+    renderQueueList();
+  } catch(e){ showMsg('โหลดข้อมูลล้มเหลว'); }
 }
 
-function loadRoomStatuses() {
-  // ในระบบจริงดึงจาก API
-  // ตอนนี้ใช้ค่าเริ่มต้น VD ทั้งหมด
-  Object.keys(ROOM_DATA).forEach(no => {
-    roomStatuses[no] = roomStatuses[no] || 'VD';
-    updateRoomBtn(no, roomStatuses[no]);
-  });
+// หน้าหลัก: สรุปห้องที่ต้องทำ
+function renderMyRooms() {
+  const todo = queue.filter(q=>q.status==='รอทำ'||q.status==='กำลังทำ');
+  const done = queue.filter(q=>q.status==='VC'||q.status==='OC');
+  const el = document.getElementById('my-rooms');
+  if(!queue.length){ el.innerHTML='<div class="empty">ยังไม่มีรายการจาก FO</div>'; return; }
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      <div style="background:#fee2e2;border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#dc2626">${todo.length}</div>
+        <div style="font-size:11px;color:#991b1b">รอทำ</div>
+      </div>
+      <div style="background:#fce7f3;border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#db2777">${queue.filter(q=>q.status==='กำลังทำ').length}</div>
+        <div style="font-size:11px;color:#9d174d">กำลังทำ</div>
+      </div>
+      <div style="background:#d1fae5;border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#059669">${done.length}</div>
+        <div style="font-size:11px;color:#065f46">เสร็จแล้ว</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--gray-mid)">กดแท็บ "ห้องพัก" เพื่ออัปเดตสถานะแต่ละห้อง</div>`;
 }
 
-function updateRoomBtn(roomNo, status) {
-  const btn = document.getElementById('room-' + roomNo);
-  if(!btn) return;
-  const classMap = {VC:'vc', VD:'vd', OC:'oc', CO:'co', OOO:'ooo', 'กำลังทำ':'doing'};
-  btn.className = 'room-btn ' + (classMap[status] || 'vd');
+// แท็บห้องพัก: รายการห้องทั้งหมด
+function renderQueueList() {
+  const el = document.getElementById('room-queue-list');
+  if(!queue.length){ el.innerHTML='<div class="empty">ยังไม่มีรายการห้องจาก Front Office</div>'; return; }
+
+  const order = {'รอทำ':0,'กำลังทำ':1,'VC':2,'OOO':3,'OC':4};
+  const sorted = [...queue].sort((a,b)=>(order[a.status]??5)-(order[b.status]??5));
+
+  el.innerHTML = sorted.map(q=>{
+    const cls = {รอทำ:'wait','กำลังทำ':'doing',VC:'vc',OC:'oc',OOO:''}[q.status]||'';
+    const pill = {
+      รอทำ:'<span class="spill sp-wait">รอทำ</span>',
+      'กำลังทำ':'<span class="spill sp-doing">กำลังทำ</span>',
+      VC:'<span class="spill sp-vc">VC พร้อมขาย</span>',
+      OC:'<span class="spill sp-oc">OC เสร็จ</span>',
+    }[q.status]||'';
+    const taskLabel = q.taskType==='CO'?'ทำความสะอาด':q.taskType==='OC'?'เปลี่ยนผ้า':'ปิดซ่อม';
+    return `<div class="room-q ${cls}" onclick="openRoomModal(${JSON.stringify(q).replace(/"/g,'&quot;')})">
+      <div class="room-q-no">${q.roomNo}</div>
+      <div class="room-q-info">
+        <div class="room-q-type">${q.roomType} · ${taskLabel}</div>
+        <div class="room-q-task">${q.maid?'แม่บ้าน: '+q.maid:'รอรับงาน'}</div>
+      </div>
+      ${pill}
+    </div>`;
+  }).join('');
 }
 
-function openRoomModal(roomNo) {
-  if(!state.loggedIn) { showMsg('กรุณาลงชื่อเข้างานก่อน'); return; }
-  state.currentRoom = roomNo;
-  const info = ROOM_DATA[roomNo];
-  const defaults = DEFAULTS[info.type];
+// ===== ROOM MODAL =====
+function openRoomModal(q) {
+  if(!state.loggedIn){ showMsg('กรุณาลงชื่อเข้างานก่อน'); return; }
+  curRoom = q;
+  const def = DEFAULTS[q.roomType] || DEFAULTS['DLK'];
+  document.getElementById('modal-title').textContent = `ห้อง ${q.roomNo} (${q.roomType})`;
+  document.getElementById('modal-status').value = q.status==='รอทำ'?'กำลังทำ':q.status;
 
-  document.getElementById('modal-title').textContent = `ห้อง ${roomNo} (${info.type})`;
-
-  const curStatus = roomStatuses[roomNo] || 'VD';
-  document.getElementById('modal-status').value = curStatus;
-
-  // สร้าง supply rows
-  const tbody = document.getElementById('modal-supply-rows');
-  tbody.innerHTML = '';
-  Object.entries(defaults).forEach(([item, def]) => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${item}</td>
-        <td style="text-align:center;color:var(--gray-mid);">${def}</td>
-        <td><input type="number" id="sup-${item}" min="0" value="${def}" style="width:60px;padding:5px;text-align:center;"></td>
-      </tr>`;
-  });
+  const tbody = document.getElementById('modal-sup');
+  tbody.innerHTML = Object.entries(def).map(([item,val])=>`
+    <tr><td>${item}</td><td style="text-align:center;color:var(--gray-mid)">${val}</td>
+    <td><input type="number" id="sup-${item}" min="0" value="${val}" style="width:60px;padding:5px;text-align:center;border:1px solid var(--border);border-radius:6px;font-size:14px"></td></tr>`).join('');
 
   document.getElementById('modal-note').value = '';
   document.getElementById('room-overlay').classList.add('open');
 }
 
-function closeModal(e) {
-  if(e.target === document.getElementById('room-overlay'))
-    document.getElementById('room-overlay').classList.remove('open');
-}
-
-function saveRoomStatus() {
-  const roomNo = state.currentRoom;
-  const info = ROOM_DATA[roomNo];
-  const defaults = DEFAULTS[info.type];
+async function saveRoomStatus() {
+  if(!curRoom) return;
   const status = document.getElementById('modal-status').value;
-
-  const supplyData = {};
-  Object.keys(defaults).forEach(item => {
-    const el = document.getElementById('sup-' + item);
-    supplyData[item] = el ? parseInt(el.value)||0 : defaults[item];
-  });
-
-  roomStatuses[roomNo] = status;
-  updateRoomBtn(roomNo, status);
+  const now = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 
   const payload = {
-    action: 'updateRoomStatus',
-    เลขห้อง: roomNo,
-    ประเภทห้อง: info.type,
-    สถานะ: status,
-    ชื่อแม่บ้าน: state.staff,
-    กะ: state.shift,
-    เวลาเริ่ม: status === 'กำลังทำ' ? new Date().toLocaleTimeString('th-TH') : '',
-    เวลาเสร็จ: status === 'VC' ? new Date().toLocaleTimeString('th-TH') : '',
-    ผ้าปูเตียง: supplyData['ผ้าปูเตียง'],
-    ปลอกหมอน: supplyData['ปลอกหมอน'],
-    ปลอกผ้านวม: supplyData['ปลอกผ้านวม'],
-    ผ้าขนหนู: supplyData['ผ้าขนหนู'],
-    ผ้าเช็ดตัว: supplyData['ผ้าเช็ดตัว'],
-    ผ้าเช็ดเท้า: supplyData['ผ้าเช็ดเท้า'],
-    น้ำดื่ม: supplyData['น้ำดื่ม'],
-    น้ำผลไม้: supplyData['น้ำผลไม้'],
-    หมายเหตุ: document.getElementById('modal-note').value,
+    action:'updateStatus',
+    roomNo: curRoom.roomNo,
+    roomType: curRoom.roomType,
+    taskType: curRoom.taskType,
+    status,
+    maid: state.maid,
+    startTime: status==='กำลังทำ' ? now : curRoom.startTime||'',
+    endTime: (status==='VC'||status==='OC') ? now : '',
   };
 
-  postAPI(payload);
-  document.getElementById('room-overlay').classList.remove('open');
-  updateDailySummary();
-  showMsg(`ห้อง ${roomNo} → ${status}`);
-}
+  const btn = document.querySelector('#room-overlay .btn-green');
+  btn.textContent='กำลังบันทึก...'; btn.disabled=true;
+  const res = await postAPI(payload);
+  btn.textContent='บันทึกสถานะ'; btn.disabled=false;
 
-function updateDailySummary() {
-  const counts = {VC:0, CO:0, OC:0, VD:0, 'กำลังทำ':0};
-  Object.values(roomStatuses).forEach(s => { if(counts[s]!==undefined) counts[s]++; });
-  document.getElementById('daily-summary').innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
-      <div style="background:var(--green-light);border-radius:8px;padding:8px;">
-        <div style="font-size:22px;font-weight:700;color:var(--green);">${counts.VC}</div>
-        <div style="font-size:11px;color:var(--green);">VC พร้อมขาย</div>
-      </div>
-      <div style="background:#fce7f3;border-radius:8px;padding:8px;">
-        <div style="font-size:22px;font-weight:700;color:#db2777;">${counts['กำลังทำ']}</div>
-        <div style="font-size:11px;color:#db2777;">กำลังทำ</div>
-      </div>
-      <div style="background:var(--red-light);border-radius:8px;padding:8px;">
-        <div style="font-size:22px;font-weight:700;color:var(--red);">${counts.CO}</div>
-        <div style="font-size:11px;color:var(--red);">CO รอทำ</div>
-      </div>
-    </div>`;
-}
-
-// ====== WITHDRAWAL ======
-function saveWithdrawal() {
-  const data = {
-    action: 'saveStock',
-    items: [
-      {รายการ:'ผ้าปูเตียง(เบิก)', คงเหลือ: document.getElementById('w-bed').value, จุดสั่งซื้อ:0},
-      {รายการ:'น้ำดื่ม(เบิก)',    คงเหลือ: document.getElementById('w-water').value, จุดสั่งซื้อ:0},
-    ]
-  };
-  postAPI(data);
-  showMsg('บันทึกการเบิกเรียบร้อย');
-}
-
-// ====== LAUNDRY ======
-function saveLaundry(type) {
-  const isS = type === 'ส่ง';
-  const prefix = isS ? 'ls' : 'lr';
-  const payload = {
-    action: 'saveLaundry',
-    กะ: state.shift,
-    ชื่อ: state.staff,
-    ส่ง: isS ? getLaundryValues(prefix) : {ผ้าปู:0,ปลอกหมอน:0,ปลอกนวม:0,ผ้าขนหนู:0,ผ้าเช็ดตัว:0,ผ้าเช็ดเท้า:0},
-    รับ: !isS ? getLaundryValues(prefix) : {ผ้าปู:0,ปลอกหมอน:0,ปลอกนวม:0,ผ้าขนหนู:0,ผ้าเช็ดตัว:0,ผ้าเช็ดเท้า:0},
-  };
-  postAPI(payload);
-  showMsg(`บันทึก${type}ผ้าซักเรียบร้อย`);
-}
-
-function getLaundryValues(prefix) {
-  return {
-    ผ้าปู: parseInt(document.getElementById(prefix+'-bed').value)||0,
-    ปลอกหมอน: parseInt(document.getElementById(prefix+'-pillow').value)||0,
-    ปลอกนวม: parseInt(document.getElementById(prefix+'-duvet').value)||0,
-    ผ้าขนหนู: parseInt(document.getElementById(prefix+'-htowel').value)||0,
-    ผ้าเช็ดตัว: parseInt(document.getElementById(prefix+'-btowel').value)||0,
-    ผ้าเช็ดเท้า: parseInt(document.getElementById(prefix+'-ftowel').value)||0,
-  };
-}
-
-// ====== CHECKLIST ======
-let checkState = {};
-function buildChecklist() {
-  const el = document.getElementById('checklist-items');
-  el.innerHTML = CHECKLIST.map((item, i) => `
-    <div class="check-item" id="ci-${i}" onclick="toggleCheck(${i})">
-      <div class="check-box" id="cb-${i}">✓</div>
-      <span>${item}</span>
-    </div>`).join('');
-}
-
-function toggleCheck(i) {
-  checkState[i] = !checkState[i];
-  document.getElementById('ci-'+i).classList.toggle('checked', checkState[i]);
-}
-
-function submitChecklist() {
-  const done = Object.values(checkState).filter(Boolean).length;
-  if(done < CHECKLIST.length) {
-    if(!confirm(`ยังติ๊กไม่ครบ (${done}/${CHECKLIST.length} รายการ) ต้องการส่งรายงานเลยไหม?`)) return;
+  if(res.ok !== false) {
+    document.getElementById('room-overlay').classList.remove('open');
+    await loadQueue();
+    showMsg(`ห้อง ${curRoom.roomNo} → ${status}`);
+  } else {
+    showMsg('เกิดข้อผิดพลาด กรุณาลองใหม่');
   }
-  const payload = {
-    action: 'saveStock',
-    items: [
-      {รายการ:'น้ำดื่ม', คงเหลือ:document.getElementById('sk-water').value, จุดสั่งซื้อ:document.getElementById('sp-water').value},
-      {รายการ:'น้ำผลไม้', คงเหลือ:document.getElementById('sk-juice').value, จุดสั่งซื้อ:document.getElementById('sp-juice').value},
-      {รายการ:'น้ำยาถูพื้น', คงเหลือ:document.getElementById('sk-floor').value, จุดสั่งซื้อ:document.getElementById('sp-floor').value},
-      {รายการ:'น้ำยาล้างห้องน้ำ', คงเหลือ:document.getElementById('sk-bath').value, จุดสั่งซื้อ:document.getElementById('sp-bath').value},
-      {รายการ:'น้ำยาเช็ดกระจก', คงเหลือ:document.getElementById('sk-glass').value, จุดสั่งซื้อ:document.getElementById('sp-glass').value},
-    ],
-    ปัญหา: document.getElementById('daily-issue').value
-  };
-  postAPI(payload);
-  showMsg('ส่งรายงานสิ้นวันเรียบร้อย');
 }
 
-// ====== DAMAGE ======
-function buildDamageList() {
-  const el = document.getElementById('damage-items-list');
-  el.innerHTML = DAMAGE_ITEMS.map(item => `
+// ===== DAMAGE =====
+function buildDmgList() {
+  document.getElementById('dmg-items-list').innerHTML = DMG_ITEMS.map(d=>`
     <div class="dmg-item">
-      <label>${item.รายการ}</label>
-      <input type="number" id="dmg-${item.id}" min="0" value="0" style="width:56px;" oninput="calcDamageTotal()">
-      <span class="dmg-price">฿${item.ราคา.toLocaleString()}</span>
+      <label>${d.n}</label>
+      <input type="number" id="dmg-${d.id}" min="0" value="0" oninput="calcDmg()">
+      <span class="dmg-price">฿${d.p.toLocaleString()}</span>
     </div>`).join('');
 }
 
-function openDamageReport() {
+function openDmgModal() {
   document.getElementById('room-overlay').classList.remove('open');
-  document.getElementById('dmg-room-no').textContent = state.currentRoom;
-  DAMAGE_ITEMS.forEach(item => {
-    const el = document.getElementById('dmg-' + item.id);
-    if(el) el.value = 0;
-  });
+  document.getElementById('dmg-room-no').textContent = curRoom?.roomNo;
+  DMG_ITEMS.forEach(d=>{ const el=document.getElementById('dmg-'+d.id); if(el)el.value=0; });
   document.getElementById('dmg-total').textContent = '0';
   document.getElementById('dmg-detail').value = '';
-  document.getElementById('damage-overlay').classList.add('open');
+  document.getElementById('dmg-overlay').classList.add('open');
 }
 
-function closeDamageModal(e) {
-  if(e.target === document.getElementById('damage-overlay'))
-    document.getElementById('damage-overlay').classList.remove('open');
-}
-
-function calcDamageTotal() {
-  let total = 0;
-  DAMAGE_ITEMS.forEach(item => {
-    const el = document.getElementById('dmg-' + item.id);
-    if(el) total += (parseInt(el.value)||0) * item.ราคา;
-  });
+function calcDmg() {
+  const total = DMG_ITEMS.reduce((s,d)=>s+(parseInt(document.getElementById('dmg-'+d.id)?.value)||0)*d.p, 0);
   document.getElementById('dmg-total').textContent = total.toLocaleString();
 }
 
-function submitDamage() {
-  const items = DAMAGE_ITEMS
-    .filter(item => (parseInt(document.getElementById('dmg-'+item.id)?.value)||0) > 0)
-    .map(item => ({
-      รายการ: item.รายการ,
-      จำนวน: parseInt(document.getElementById('dmg-'+item.id).value),
-      ราคา: item.ราคา
-    }));
+async function submitDamage() {
+  const items = DMG_ITEMS
+    .filter(d=>(parseInt(document.getElementById('dmg-'+d.id)?.value)||0)>0)
+    .map(d=>({ name:d.n, qty:parseInt(document.getElementById('dmg-'+d.id).value), price:d.p }));
+  if(!items.length){ showMsg('กรุณาเลือกรายการที่เสียหาย'); return; }
 
-  if(items.length === 0) { showMsg('กรุณาเลือกรายการที่เสียหาย'); return; }
-
-  const payload = {
-    action: 'reportDamage',
-    เลขห้อง: state.currentRoom,
-    ชื่อแม่บ้าน: state.staff,
+  await postAPI({
+    action:'reportDamage',
+    roomNo: curRoom?.roomNo,
+    maid: state.maid,
     items,
-    รายละเอียด: document.getElementById('dmg-detail').value
-  };
-  postAPI(payload);
-  document.getElementById('damage-overlay').classList.remove('open');
+    detail: document.getElementById('dmg-detail').value
+  });
+  document.getElementById('dmg-overlay').classList.remove('open');
   showMsg('ส่งรายงานความเสียหายแล้ว รอผู้จัดการอนุมัติ');
 }
 
-// ====== TAB ======
-function switchTab(tab) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+// ===== LAUNDRY =====
+async function saveLaundry(type) {
+  const p = type==='ส่ง' ? 'ls' : 'lr';
+  await postAPI({
+    action:'saveLaundry', type, shift:state.shift, maid:state.maid,
+    bedSheet: +document.getElementById(p+'-bed').value||0,
+    pillowCase: +document.getElementById(p+'-pillow').value||0,
+    duvetCover: +document.getElementById(p+'-duvet').value||0,
+    bathTowel: +document.getElementById(p+'-htowel').value||0,
+    bodyTowel: +document.getElementById(p+'-btowel').value||0,
+    footTowel: +document.getElementById(p+'-ftowel').value||0,
+  });
+  showMsg(`บันทึก${type}ผ้าซักเรียบร้อย`);
+}
+
+// ===== CHECKLIST =====
+function buildChecklist() {
+  document.getElementById('cl-items').innerHTML = CHECKLIST.map((item,i)=>`
+    <div class="ci" id="ci-${i}" onclick="toggleCheck(${i})">
+      <div class="cb" id="cb-${i}">✓</div><span>${item}</span>
+    </div>`).join('');
+}
+function toggleCheck(i) {
+  checkState[i]=!checkState[i];
+  document.getElementById('ci-'+i).classList.toggle('checked',checkState[i]);
+}
+async function submitChecklist() {
+  const done = Object.values(checkState).filter(Boolean).length;
+  if(done<CHECKLIST.length&&!confirm(`ยังติ๊กไม่ครบ (${done}/${CHECKLIST.length}) ต้องการส่งเลยไหม?`)) return;
+  showMsg('ส่งรายงานสิ้นวันเรียบร้อย');
+}
+
+// ===== TABS =====
+function switchTab(tab,el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
-  event.target.classList.add('active');
+  el.classList.add('active');
+  if(tab==='rooms'&&state.loggedIn) loadQueue();
 }
 
-// ====== API ======
+// ===== API =====
 async function postAPI(data) {
-  if(API_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return; // demo mode
   try {
-    await fetch(API_URL, {
-      method:'POST',
-      body: JSON.stringify(data),
-      headers:{'Content-Type':'application/json'}
-    });
-  } catch(e) { console.error(e); }
+    const r = await fetch(API,{method:'POST',body:JSON.stringify(data)});
+    return await r.json();
+  } catch(e){ console.error(e); return {error:e.message}; }
 }
-
-// ====== TOAST ======
 function showMsg(text) {
-  const el = document.getElementById('msg');
-  el.textContent = text; el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 2500);
+  const el=document.getElementById('msg');
+  el.textContent=text; el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
 }
 </script>
 </body>
