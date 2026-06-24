@@ -83,9 +83,10 @@
   .add-form h3 { font-size: 14px; font-weight: 600; color: var(--blue); margin-bottom: 10px; }
 
   .room-grid-pick { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-top: 8px; }
-  .room-pick-btn { border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 4px; text-align: center; cursor: pointer; background: white; font-size: 12px; font-weight: 600; font-family: inherit; transition: all .15s; }
-  .room-pick-btn.selected { background: var(--blue-mid); color: white; border-color: var(--blue-mid); }
-  .room-pick-btn.added { background: var(--gray-light); color: var(--gray-mid); border-color: var(--border); cursor: default; }
+  .room-pick-btn { border: 1.5px solid var(--border); border-radius: 7px; padding: 10px 4px; text-align: center; cursor: pointer; background: white; font-size: 13px; font-weight: 600; font-family: inherit; transition: all .15s; color: var(--gray); }
+  .room-pick-btn.selected { background: #1d4ed8; color: white; border-color: #1d4ed8; box-shadow: 0 2px 8px rgba(29,78,216,0.35); transform: scale(1.06); }
+  .room-pick-btn.added { background: #f0fdf4; color: #15803d; border-color: #86efac; cursor: default; }
+  .room-pick-btn.added::after { content: '✓'; display: block; font-size: 10px; color: #15803d; }
 
   .floor-label { font-size: 11px; font-weight: 600; color: var(--gray-mid); margin: 10px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
 
@@ -217,7 +218,7 @@
 <div id="msg"></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbzarv3ANFYpwdxOLLecMidn64_gxUVfao6XHdrWVRvNY3thuxskvU5RMs0Jwg3PQKg/exec';
+const API_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 
 const ROOM_DATA = {
   201:'DLT', 202:'DLT', 203:'DLK', 204:'DLF', 205:'DLK',
