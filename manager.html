@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HK - ผู้จัดการ</title>
+<style>
+  :root {
+    --purple: #4c1d95; --purple-mid: #7c3aed; --purple-light: #ede9fe; --purple-pale: #f5f3ff;
+    --green: #065f46; --green-mid: #059669; --green-light: #d1fae5;
+    --amber: #92400e; --amber-mid: #d97706; --amber-light: #fef3c7;
+    --red: #991b1b; --red-mid: #dc2626; --red-light: #fee2e2;
+    --blue: #1e40af; --blue-mid: #2563eb; --blue-light: #dbeafe;
+    --gray: #1f2937; --gray-mid: #6b7280; --gray-light: #f9fafb; --border: #e5e7eb;
+    --radius: 10px; --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #f5f3ff; color: var(--gray); font-size: 15px; }
+
+  .header { background: var(--purple); color: white; padding: 14px 16px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 17px; font-weight: 600; }
+  .sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+  .time-badge { background: rgba(255,255,255,.2); border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
+
+  .tabs { display: flex; background: white; border-bottom: 2px solid var(--border); position: sticky; top: 60px; z-index: 99; overflow-x: auto; }
+  .tab { flex-shrink: 0; text-align: center; padding: 11px 14px; font-size: 13px; color: var(--gray-mid); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+  .tab.active { color: var(--purple-mid); border-color: var(--purple-mid); font-weight: 600; }
+
+  .page { display: none; padding: 14px; }
+  .page.active { display: block; }
+
+  .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; }
+  .card-head { padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .card-body { padding: 14px; }
+
+  .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+  .stat { background: white; border-radius: var(--radius); padding: 12px 8px; text-align: center; box-shadow: var(--shadow); }
+  .stat-num { font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--gray-mid); margin-top: 4px; }
+
+  /* CONTROL BOARD */
+  .floor-label { font-size: 11px; font-weight: 600; color: var(--gray-mid); text-transform: uppercase; letter-spacing: .5px; margin: 12px 0 6px; }
+  .room-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+  .room-tile { border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 12px; background: white; }
+  .room-tile .rno { font-weight: 700; font-size: 14px; }
+  .room-tile .rtype { font-size: 10px; color: var(--gray-mid); }
+  .room-tile .rwho { font-size: 10px; margin-top: 2px; }
+  .room-tile.vc   { background: #d1fae5; border-color: #059669; }
+  .room-tile.vd   { background: #fef3c7; border-color: #d97706; }
+  .room-tile.co   { background: #fee2e2; border-color: #dc2626; }
+  .room-tile.oc   { background: #dbeafe; border-color: #2563eb; }
+  .room-tile.ooo  { background: #f3f4f6; border-color: #9ca3af; }
+  .room-tile.doing { background: #fce7f3; border-color: #db2777; }
+
+  /* STAFF */
+  .staff-card { background: white; border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .staff-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--purple-light); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: var(--purple-mid); flex-shrink: 0; }
+  .staff-name { font-weight: 600; font-size: 15px; }
+  .staff-detail { font-size: 12px; color: var(--gray-mid); margin-top: 2px; }
+  .staff-rooms { font-size: 12px; color: var(--purple-mid); margin-top: 4px; font-weight: 600; }
+
+  /* LAUNDRY */
+  .laundry-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .laundry-table th { background: var(--gray-light); padding: 7px 8px; text-align: center; font-size: 11px; color: var(--gray-mid); }
+  .laundry-table td { padding: 7px 8px; border-top: 1px solid var(--border); text-align: center; }
+  .laundry-table td:first-child { text-align: left; font-weight: 500; }
+
+  /* LEAVE */
+  .leave-card { background: white; border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); margin-bottom: 8px; border-left: 4px solid var(--amber-mid); }
+  .leave-card.approved { border-color: var(--green-mid); }
+  .leave-card.rejected { border-color: var(--gray-mid); }
+
+  /* DAMAGE */
+  .dmg-card { background: white; border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); margin-bottom: 8px; border-left: 4px solid var(--red-mid); }
+
+  /* FORM */
+  label { display: block; font-size: 13px; color: var(--gray-mid); margin-bottom: 4px; margin-top: 10px; }
+  label:first-child { margin-top: 0; }
+  select, input[type=text], input[type=date], textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; font-size: 15px; font-family: inherit;
+    background: var(--gray-light); outline: none;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--purple-mid); background: white; }
+  textarea { min-height: 72px; resize: vertical; }
+
+  .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-family: inherit; font-weight: 600; cursor: pointer; text-align: center; margin-top: 8px; }
+  .btn-purple { background: var(--purple-mid); color: white; }
+  .btn-green  { background: var(--green-mid);  color: white; }
+  .btn-red    { background: var(--red-mid);    color: white; }
+  .btn-outline { background: white; color: var(--purple-mid); border: 1.5px solid var(--purple-mid); margin-top: 6px; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; display: inline-block; border-radius: 6px; margin-top: 0; margin-right: 4px; }
+
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; display: inline-block; }
+  .pill-pending  { background: var(--amber-light); color: var(--amber); }
+  .pill-approved { background: var(--green-light); color: var(--green); }
+  .pill-rejected { background: var(--gray-light);  color: var(--gray-mid); }
+
+  .section-title { font-size: 12px; font-weight: 600; color: var(--gray-mid); text-transform: uppercase; letter-spacing: .5px; margin: 14px 0 8px; }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; }
+  .overlay.open { display: flex; align-items: flex-end; }
+  .modal { background: white; border-radius: 16px 16px 0 0; width: 100%; padding: 20px 16px 32px; max-height: 90vh; overflow-y: auto; }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 14px; }
+
+  .empty { text-align: center; padding: 28px 16px; color: var(--gray-mid); font-size: 14px; }
+  #msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; display: none; z-index: 999; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div style="font-size:17px;font-weight:600;">ผู้จัดการ</div>
+    <div class="sub" id="hd-date"></div>
+  </div>
+  <div class="time-badge" id="hd-time">--:--</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('board')">Control Board</div>
+  <div class="tab" onclick="switchTab('staff')">แม่บ้าน</div>
+  <div class="tab" onclick="switchTab('laundry')">ผ้าซัก</div>
+  <div class="tab" onclick="switchTab('leave')">การลา</div>
+  <div class="tab" onclick="switchTab('damage')">ค่าเสียหาย</div>
+</div>
+
+<!-- ===== CONTROL BOARD ===== -->
+<div class="page active" id="page-board">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" id="b-vc" style="color:var(--green-mid)">0</div>
+      <div class="stat-label">VC พร้อมขาย</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="b-doing" style="color:#db2777">0</div>
+      <div class="stat-label">กำลังทำ</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="b-pending" style="color:var(--red-mid)">0</div>
+      <div class="stat-label">รอทำ</div>
+    </div>
+  </div>
+
+  <div class="floor-label">ชั้น 2</div>
+  <div class="room-grid" id="board-2"></div>
+  <div class="floor-label">ชั้น 3</div>
+  <div class="room-grid" id="board-3"></div>
+  <div class="floor-label">ชั้น 4</div>
+  <div class="room-grid" id="board-4"></div>
+  <div style="height:16px;"></div>
+
+  <!-- legend -->
+  <div class="card">
+    <div class="card-body" style="display:flex;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;"><div style="width:14px;height:14px;border-radius:3px;background:#d1fae5;border:1px solid #059669;"></div>VC</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;"><div style="width:14px;height:14px;border-radius:3px;background:#fce7f3;border:1px solid #db2777;"></div>กำลังทำ</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;"><div style="width:14px;height:14px;border-radius:3px;background:#fee2e2;border:1px solid #dc2626;"></div>CO รอทำ</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;"><div style="width:14px;height:14px;border-radius:3px;background:#dbeafe;border:1px solid #2563eb;"></div>OC</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;"><div style="width:14px;height:14px;border-radius:3px;background:#f3f4f6;border:1px solid #9ca3af;"></div>OOO</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STAFF ===== -->
+<div class="page" id="page-staff">
+  <div class="section-title">ประสิทธิภาพวันนี้</div>
+  <div id="staff-list"><div class="empty">กำลังโหลด...</div></div>
+
+  <div class="section-title">เพิ่มแม่บ้าน</div>
+  <div class="card">
+    <div class="card-body">
+      <label>ชื่อ</label><input type="text" id="st-fname" placeholder="ชื่อ">
+      <label>นามสกุล</label><input type="text" id="st-lname" placeholder="นามสกุล">
+      <label>ชื่อเล่น</label><input type="text" id="st-nick" placeholder="ชื่อเล่น">
+      <label>กะปกติ</label>
+      <select id="st-shift">
+        <option value="เช้า">กะเช้า</option>
+        <option value="บ่าย">กะบ่าย</option>
+        <option value="สลับ">สลับกะ</option>
+      </select>
+      <button class="btn btn-purple" onclick="addStaff()">เพิ่มแม่บ้าน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LAUNDRY ===== -->
+<div class="page" id="page-laundry">
+  <div class="card">
+    <div class="card-head">สรุปผ้าซักวันนี้</div>
+    <div class="card-body" style="overflow-x:auto;">
+      <table class="laundry-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;">รายการ</th>
+            <th>ส่งซัก</th>
+            <th>รับคืน</th>
+            <th>คงเหลือ</th>
+          </tr>
+        </thead>
+        <tbody id="laundry-body">
+          <tr><td colspan="4" style="text-align:center;padding:16px;color:var(--gray-mid);">ยังไม่มีข้อมูล</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-title">ประวัติผ้าซัก 7 วันล่าสุด</div>
+  <div id="laundry-history"><div class="empty">ยังไม่มีข้อมูล</div></div>
+</div>
+
+<!-- ===== LEAVE ===== -->
+<div class="page" id="page-leave">
+  <div class="section-title">รออนุมัติ</div>
+  <div id="leave-pending"><div class="empty">ไม่มีรายการรออนุมัติ</div></div>
+
+  <div class="section-title">ประวัติการลา</div>
+  <div id="leave-history"><div class="empty">ยังไม่มีประวัติ</div></div>
+</div>
+
+<!-- ===== DAMAGE ===== -->
+<div class="page" id="page-damage">
+  <div class="section-title">รออนุมัติ</div>
+  <div id="dmg-pending"><div class="empty">ไม่มีรายการ</div></div>
+
+  <div class="section-title">ประวัติ</div>
+  <div id="dmg-history"><div class="empty">ยังไม่มีประวัติ</div></div>
+</div>
+
+<!-- LEAVE APPROVE MODAL -->
+<div class="overlay" id="leave-overlay" onclick="closeLeaveOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:12px;">คำขอลา</div>
+    <div id="leave-modal-detail"></div>
+    <button class="btn btn-green" style="margin-top:14px;" onclick="approveLeave(true)">อนุมัติ</button>
+    <button class="btn btn-red" style="margin-top:6px;" onclick="approveLeave(false)">ไม่อนุมัติ</button>
+    <button class="btn btn-outline" onclick="document.getElementById('leave-overlay').classList.remove('open')">ปิด</button>
+  </div>
+</div>
+
+<!-- DAMAGE APPROVE MODAL -->
+<div class="overlay" id="dmg-overlay" onclick="closeDmgOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;">ความเสียหาย - ห้อง <span id="dmg-modal-room"></span></div>
+    <div id="dmg-modal-maid" style="font-size:13px;color:var(--gray-mid);margin-bottom:12px;"></div>
+    <div id="dmg-modal-items" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;"></div>
+    <div style="background:var(--red-light);border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+      <div style="font-size:12px;color:var(--red);">ยอดรวม</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red-mid);">฿<span id="dmg-modal-total">0</span></div>
+    </div>
+    <div id="dmg-modal-note" style="font-size:13px;color:var(--gray-mid);margin-bottom:14px;"></div>
+    <button class="btn btn-green" onclick="approveDmg(true)">อนุมัติ - แจ้งเก็บเงินลูกค้า</button>
+    <button class="btn btn-red" style="margin-top:6px;" onclick="approveDmg(false)">ไม่อนุมัติ</button>
+    <button class="btn btn-outline" onclick="document.getElementById('dmg-overlay').classList.remove('open')">ปิด</button>
+  </div>
+</div>
+
+<div id="msg"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzarv3ANFYpwdxOLLecMidn64_gxUVfao6XHdrWVRvNY3thuxskvU5RMs0Jwg3PQKg/exec';
+
+const ROOM_DATA = {
+  201:'DLT',202:'DLT',203:'DLK',204:'DLF',205:'DLK',206:'DLK',207:'DLT',208:'DLK',209:'DLK',
+  310:'DLK',311:'DLK',312:'DLK',313:'DLK',314:'DLF',315:'DLK',316:'DLK',317:'DLK',318:'DLK',319:'DLK',320:'DLK',
+  421:'DLT',422:'DLT',423:'DLT',424:'DLK',425:'DLK',426:'DLK',427:'DLT',428:'DLK',429:'DLT',430:'DLK',431:'DLK',432:'Suite'
+};
+const FLOORS = {2:[201,202,203,204,205,206,207,208,209],3:[310,311,312,313,314,315,316,317,318,319,320],4:[421,422,423,424,425,426,427,428,429,430,431,432]};
+
+let queue = [];
+let leaves = [];
+let damages = [];
+let currentLeaveIdx = null;
+let currentDmgIdx = null;
+
+const LAUNDRY_ITEMS = ['ผ้าปูเตียง','ปลอกหมอน','ปลอกผ้านวม','ผ้าขนหนู','ผ้าเช็ดตัว','ผ้าเช็ดเท้า'];
+
+window.onload = () => {
+  startClock();
+  loadAll();
+  buildBoard();
+};
+
+function startClock() {
+  const tick = () => {
+    const now = new Date();
+    document.getElementById('hd-time').textContent = now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('hd-date').textContent = now.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  };
+  tick(); setInterval(tick,1000);
+}
+
+function loadAll() {
+  queue   = JSON.parse(localStorage.getItem('hk_queue')   || '[]');
+  leaves  = JSON.parse(localStorage.getItem('hk_leaves')  || '[]');
+  damages = JSON.parse(localStorage.getItem('hk_damages') || '[]');
+  buildBoard();
+  renderStaff();
+  renderLaundry();
+  renderLeave();
+  renderDamage();
+}
+
+// ===== BOARD =====
+function buildBoard() {
+  queue = JSON.parse(localStorage.getItem('hk_queue') || '[]');
+  const qMap = {};
+  queue.forEach(q => qMap[q.roomNo] = q);
+
+  [2,3,4].forEach(floor => {
+    const el = document.getElementById('board-'+floor);
+    el.innerHTML = '';
+    FLOORS[floor].forEach(no => {
+      const q = qMap[no];
+      const status = q ? q.status : 'VC';
+      const cls = statusClass(status);
+      const who = q?.assignedTo ? q.assignedTo.split(' ')[0] : '';
+      el.innerHTML += `
+        <div class="room-tile ${cls}">
+          <div class="rno">${no}</div>
+          <div class="rtype">${ROOM_DATA[no]}</div>
+          <div class="rwho" style="color:${cls==='doing'?'#9d174d':cls==='vc'?'#065f46':'#6b7280'}">${who||statusLabel(status)}</div>
+        </div>`;
+    });
+  });
+
+  document.getElementById('b-vc').textContent      = queue.filter(q=>q.status==='VC').length;
+  document.getElementById('b-doing').textContent   = queue.filter(q=>q.status==='กำลังทำ').length;
+  document.getElementById('b-pending').textContent = queue.filter(q=>q.status==='รอทำ').length;
+}
+
+function statusClass(s) {
+  return {VC:'vc','กำลังทำ':'doing','รอทำ':'co',OC:'oc',OOO:'ooo',VD:'vd'}[s]||'';
+}
+function statusLabel(s) {
+  return {VC:'พร้อมขาย','กำลังทำ':'กำลังทำ','รอทำ':'รอทำ',OC:'OC',OOO:'ปิดซ่อม',VD:'รอทำ'}[s]||s;
+}
+
+// ===== STAFF =====
+function renderStaff() {
+  const staffList = JSON.parse(localStorage.getItem('hk_staff') || '[]');
+  const el = document.getElementById('staff-list');
+  if(staffList.length === 0) { el.innerHTML = '<div class="empty">ยังไม่มีข้อมูลแม่บ้าน</div>'; return; }
+
+  el.innerHTML = staffList.map(s => {
+    const myRooms = queue.filter(q=>q.assignedTo===s.name);
+    const done = myRooms.filter(q=>q.status==='VC').length;
+    const total = myRooms.length;
+    return `
+    <div class="staff-card">
+      <div class="staff-avatar">${s.nick?.[0]||s.name[0]}</div>
+      <div style="flex:1;">
+        <div class="staff-name">${s.name} (${s.nick||'-'})</div>
+        <div class="staff-detail">กะ${s.shift} · ${s.status}</div>
+        <div class="staff-rooms">ทำห้อง ${done}/${total} ห้อง</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addStaff() {
+  const name = document.getElementById('st-fname').value.trim();
+  const lname = document.getElementById('st-lname').value.trim();
+  const nick = document.getElementById('st-nick').value.trim();
+  const shift = document.getElementById('st-shift').value;
+  if(!name) { showMsg('กรุณากรอกชื่อ'); return; }
+
+  const staffList = JSON.parse(localStorage.getItem('hk_staff') || '[]');
+  staffList.push({name: name+' '+lname, nick, shift, status:'ทำงาน'});
+  localStorage.setItem('hk_staff', JSON.stringify(staffList));
+
+  document.getElementById('st-fname').value='';
+  document.getElementById('st-lname').value='';
+  document.getElementById('st-nick').value='';
+  renderStaff();
+  showMsg('เพิ่มแม่บ้านแล้ว');
+  postAPI({action:'addStaff', ชื่อ:name, นามสกุล:lname, ชื่อเล่น:nick, กะปกติ:shift});
+}
+
+// ===== LAUNDRY =====
+function renderLaundry() {
+  const records = JSON.parse(localStorage.getItem('hk_laundry') || '[]');
+  const today = new Date().toLocaleDateString('th-TH');
+  const todayRec = records.filter(r=>r.date===today);
+
+  const totals = {};
+  LAUNDRY_ITEMS.forEach(item => { totals[item] = {send:0, recv:0}; });
+  todayRec.forEach(r => {
+    LAUNDRY_ITEMS.forEach(item => {
+      totals[item].send += r.send?.[item]||0;
+      totals[item].recv += r.recv?.[item]||0;
+    });
+  });
+
+  const tbody = document.getElementById('laundry-body');
+  tbody.innerHTML = LAUNDRY_ITEMS.map(item => {
+    const diff = totals[item].recv - totals[item].send;
+    return `<tr>
+      <td>${item}</td>
+      <td>${totals[item].send||'-'}</td>
+      <td>${totals[item].recv||'-'}</td>
+      <td style="font-weight:600;color:${diff<0?'var(--red-mid)':diff>0?'var(--green-mid)':'var(--gray-mid)'}">${diff===0?'-':diff>0?'+'+diff:diff}</td>
+    </tr>`;
+  }).join('');
+
+  const hist = document.getElementById('laundry-history');
+  if(records.length===0) { hist.innerHTML='<div class="empty">ยังไม่มีข้อมูล</div>'; return; }
+  hist.innerHTML = records.slice(-7).reverse().map(r=>`
+    <div class="card" style="margin-bottom:8px;">
+      <div class="card-body" style="font-size:13px;">
+        <div style="font-weight:600;margin-bottom:6px;">${r.date} · กะ${r.shift} · ${r.staff}</div>
+        <div style="color:var(--gray-mid);">ส่ง: ${LAUNDRY_ITEMS.map(i=>`${i} ${r.send?.[i]||0}`).join(', ')}</div>
+        <div style="color:var(--gray-mid);margin-top:4px;">รับ: ${LAUNDRY_ITEMS.map(i=>`${i} ${r.recv?.[i]||0}`).join(', ')}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ===== LEAVE =====
+function renderLeave() {
+  const pending = leaves.filter(l=>l.status==='รออนุมัติ');
+  const elP = document.getElementById('leave-pending');
+  elP.innerHTML = pending.length===0
+    ? '<div class="empty">ไม่มีรายการรออนุมัติ</div>'
+    : pending.map((l,i)=>`
+      <div class="leave-card" onclick="openLeaveModal(${leaves.indexOf(l)})" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-weight:700;font-size:16px;">${l.name}</div>
+          <span class="pill pill-pending">รออนุมัติ</span>
+        </div>
+        <div style="font-size:13px;color:var(--gray-mid);margin-top:4px;">${l.type} · ${l.date}</div>
+        <div style="font-size:13px;margin-top:4px;">${l.reason||'-'}</div>
+      </div>`).join('');
+
+  const done = leaves.filter(l=>l.status!=='รออนุมัติ');
+  const elH = document.getElementById('leave-history');
+  elH.innerHTML = done.length===0
+    ? '<div class="empty">ยังไม่มีประวัติ</div>'
+    : done.slice(-10).reverse().map(l=>`
+      <div class="leave-card ${l.status==='อนุมัติแล้ว'?'approved':'rejected'}">
+        <div style="display:flex;justify-content:space-between;">
+          <div style="font-weight:600;">${l.name}</div>
+          <span class="pill ${l.status==='อนุมัติแล้ว'?'pill-approved':'pill-rejected'}">${l.status}</span>
+        </div>
+        <div style="font-size:12px;color:var(--gray-mid);margin-top:4px;">${l.type} · ${l.date}</div>
+      </div>`).join('');
+}
+
+function openLeaveModal(idx) {
+  currentLeaveIdx = idx;
+  const l = leaves[idx];
+  document.getElementById('leave-modal-detail').innerHTML = `
+    <div style="font-size:15px;font-weight:600;">${l.name}</div>
+    <div style="font-size:13px;color:var(--gray-mid);margin-top:4px;">ประเภท: ${l.type}</div>
+    <div style="font-size:13px;color:var(--gray-mid);">วันที่ลา: ${l.date}</div>
+    <div style="font-size:13px;margin-top:8px;">เหตุผล: ${l.reason||'-'}</div>`;
+  document.getElementById('leave-overlay').classList.add('open');
+}
+
+function approveLeave(approved) {
+  if(currentLeaveIdx===null) return;
+  leaves[currentLeaveIdx].status = approved?'อนุมัติแล้ว':'ไม่อนุมัติ';
+  localStorage.setItem('hk_leaves', JSON.stringify(leaves));
+  document.getElementById('leave-overlay').classList.remove('open');
+  renderLeave();
+  showMsg(approved?'อนุมัติการลาแล้ว':'ไม่อนุมัติการลา');
+  postAPI({action:'approveLeave', ...leaves[currentLeaveIdx]});
+}
+
+function closeLeaveOverlay(e) {
+  if(e.target===document.getElementById('leave-overlay'))
+    document.getElementById('leave-overlay').classList.remove('open');
+}
+
+// ===== DAMAGE =====
+function renderDamage() {
+  const pending = damages.filter(d=>d.status==='รออนุมัติ');
+  const elP = document.getElementById('dmg-pending');
+  elP.innerHTML = pending.length===0
+    ? '<div class="empty">ไม่มีรายการ</div>'
+    : pending.map((d)=>`
+      <div class="dmg-card" onclick="openDmgModal(${damages.indexOf(d)})" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;">
+          <div style="font-size:18px;font-weight:700;">ห้อง ${d.roomNo}</div>
+          <span class="pill pill-pending">รออนุมัติ</span>
+        </div>
+        <div style="font-size:13px;color:var(--gray-mid);margin-top:4px;">${d.items.map(i=>i.รายการ).join(', ')}</div>
+        <div style="font-size:16px;font-weight:700;color:var(--red-mid);margin-top:4px;">฿${d.total.toLocaleString()}</div>
+        <div style="font-size:12px;color:var(--gray-mid);">แจ้งโดย ${d.maid} · ${d.time}</div>
+      </div>`).join('');
+
+  const done = damages.filter(d=>d.status!=='รออนุมัติ');
+  const elH = document.getElementById('dmg-history');
+  elH.innerHTML = done.length===0
+    ? '<div class="empty">ยังไม่มีประวัติ</div>'
+    : done.slice(-10).reverse().map(d=>`
+      <div class="dmg-card" style="border-color:${d.status==='อนุมัติแล้ว'?'var(--green-mid)':'var(--gray-mid)'}">
+        <div style="display:flex;justify-content:space-between;">
+          <div style="font-weight:600;">ห้อง ${d.roomNo}</div>
+          <span class="pill ${d.status==='อนุมัติแล้ว'?'pill-approved':'pill-rejected'}">${d.status}</span>
+        </div>
+        <div style="font-size:13px;color:var(--gray-mid);">${d.items.map(i=>i.รายการ).join(', ')}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--red-mid);">฿${d.total.toLocaleString()}</div>
+      </div>`).join('');
+}
+
+function openDmgModal(idx) {
+  currentDmgIdx = idx;
+  const d = damages[idx];
+  document.getElementById('dmg-modal-room').textContent = d.roomNo;
+  document.getElementById('dmg-modal-maid').textContent = `แจ้งโดย ${d.maid} · ${d.time}`;
+  document.getElementById('dmg-modal-total').textContent = d.total.toLocaleString();
+  document.getElementById('dmg-modal-note').textContent = d.detail?`รายละเอียด: ${d.detail}`:'';
+  document.getElementById('dmg-modal-items').innerHTML = d.items.map(it=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;">
+      <span>${it.รายการ} × ${it.จำนวน}</span>
+      <span style="font-weight:600;">฿${(it.ราคา*it.จำนวน).toLocaleString()}</span>
+    </div>`).join('');
+  document.getElementById('dmg-overlay').classList.add('open');
+}
+
+function approveDmg(approved) {
+  if(currentDmgIdx===null) return;
+  damages[currentDmgIdx].status = approved?'อนุมัติแล้ว':'ไม่อนุมัติ';
+  localStorage.setItem('hk_damages', JSON.stringify(damages));
+  document.getElementById('dmg-overlay').classList.remove('open');
+  renderDamage();
+  showMsg(approved?'อนุมัติแล้ว':'ไม่อนุมัติ');
+  postAPI({action:'approveDamage', ...damages[currentDmgIdx]});
+}
+
+function closeDmgOverlay(e) {
+  if(e.target===document.getElementById('dmg-overlay'))
+    document.getElementById('dmg-overlay').classList.remove('open');
+}
+
+// ===== UTILS =====
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  loadAll();
+}
+
+async function postAPI(data) {
+  if(API_URL==='YOUR_APPS_SCRIPT_URL_HERE') return;
+  try { await fetch(API_URL,{method:'POST',body:JSON.stringify(data)}); } catch(e){}
+}
+
+function showMsg(text) {
+  const el=document.getElementById('msg');
+  el.textContent=text; el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+
+window.addEventListener('storage', e => {
+  if(['hk_queue_ts','hk_damages_ts','hk_leaves_ts'].includes(e.key)) loadAll();
+});
+</script>
+</body>
+</html>
