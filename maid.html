@@ -237,7 +237,7 @@ const DMG_ITEMS = [
   {id:23,n:'Weighing Scale (เครื่องชั่ง)',p:1000},{id:24,n:'Spoon & Fork (ช้อนส้อม)',p:100},
   {id:25,n:'Bowl (ชาม)',p:80},{id:26,n:'Plate (จาน)',p:80},{id:27,n:'Kettle (กาน้ำร้อน)',p:1000},
 ];
-const STAFF_LIST = ['แม่บ้าน 1','แม่บ้าน 2','แม่บ้าน 3','แม่บ้าน 4'];
+const STAFF_LIST = []; // โหลดจาก Google Sheets
 const CHECKLIST = [
   'ห้อง CO ทำความสะอาดครบทุกห้อง',
   'ห้อง OC เปลี่ยนผ้าและเติมของครบ',
@@ -272,9 +272,31 @@ function startClock() {
   tick(); setInterval(tick,1000);
 }
 
-function loadStaff() {
+async function loadStaff() {
   const sel = document.getElementById('sel-staff');
-  STAFF_LIST.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  sel.innerHTML = '<option value="">กำลังโหลด...</option>';
+  try {
+    const data = await apiGet('getStaff');
+    const list = Array.isArray(data) ? data : [];
+    sel.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
+    list.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.name;
+      o.textContent = s.name + (s.nick ? ' ('+s.nick+')' : '');
+      sel.appendChild(o);
+    });
+    // fallback ถ้าโหลดไม่ได้
+    if(!list.length) {
+      ['นางอุมาพร ปานทิพย์','นางทวีป บัวงาม','นางสาวสมัย เสนานุช','นางสาวรัตนาภรณ์ จันทร'].forEach(s=>{
+        const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+      });
+    }
+  } catch(e) {
+    sel.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
+    ['นางอุมาพร ปานทิพย์','นางทวีป บัวงาม','นางสาวสมัย เสนานุช','นางสาวรัตนาภรณ์ จันทร'].forEach(s=>{
+      const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+    });
+  }
 }
 
 // ===== LOGIN =====
@@ -314,19 +336,20 @@ async function loadQueue() {
 
 // หน้าหลัก: สรุปห้องที่ต้องทำ
 function renderMyRooms() {
-  const todo = queue.filter(q=>q.status==='รอทำ'||q.status==='กำลังทำ');
-  const done = queue.filter(q=>q.status==='VC'||q.status==='OC');
+  const waiting = queue.filter(q=>q.status==='รอทำ');
+  const doing   = queue.filter(q=>q.status==='กำลังทำ');
+  const done    = queue.filter(q=>q.status==='VC'||q.status==='OC');
   const el = document.getElementById('my-rooms');
   if(!queue.length){ el.innerHTML='<div class="empty">ยังไม่มีรายการจาก FO</div>'; return; }
 
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
       <div style="background:#fee2e2;border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:22px;font-weight:700;color:#dc2626">${todo.length}</div>
+        <div style="font-size:22px;font-weight:700;color:#dc2626">${waiting.length}</div>
         <div style="font-size:11px;color:#991b1b">รอทำ</div>
       </div>
       <div style="background:#fce7f3;border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:22px;font-weight:700;color:#db2777">${queue.filter(q=>q.status==='กำลังทำ').length}</div>
+        <div style="font-size:22px;font-weight:700;color:#db2777">${doing.length}</div>
         <div style="font-size:11px;color:#9d174d">กำลังทำ</div>
       </div>
       <div style="background:#d1fae5;border-radius:8px;padding:8px;text-align:center">
