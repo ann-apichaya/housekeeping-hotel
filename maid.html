@@ -591,9 +591,22 @@ function apiGet(action) {
 }
 async function apiPost(data) {
   try {
-    await fetch(API, { method:'POST', mode:'no-cors', body:JSON.stringify(data) });
-  } catch(e) {}
-  return { ok: true };
+    // ใช้ JSONP workaround: แปลง POST เป็น GET พร้อม callback
+    // เพื่อหลีกเลี่ยงปัญหา no-cors ที่ตัด body ออก
+    const cb = 'hk_post_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    return await new Promise((resolve) => {
+      const s = document.createElement('script');
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+      window[cb] = (d) => { resolve(d||{ok:true}); delete window[cb]; s.remove(); };
+      s.onerror = () => { resolve({ok:true}); s.remove(); };
+      s.src = API + '?action=' + (data.action||'') + '&payload=' + encodeURIComponent(encoded) + '&callback=' + cb + '&t=' + Date.now();
+      document.head.appendChild(s);
+      setTimeout(() => { resolve({ok:true}); }, 15000);
+    });
+  } catch(e) {
+    console.error('apiPost error:', e);
+    return { ok: false, error: e.message };
+  }
 }
 
 </script>
