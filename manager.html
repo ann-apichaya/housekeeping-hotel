@@ -320,14 +320,35 @@ function renderBoard(){
 }
 
 // ===== SCHEDULE =====
-function schMonthStr(){ return schYear+'-'+String(schMonth).padStart(2,'0'); }
-function prevMonth(){ schMonth--; if(schMonth<1){schMonth=12;schYear--;} loadSchedule(); }
-function nextMonth(){ schMonth++; if(schMonth>12){schMonth=1;schYear++;} loadSchedule(); }
+// ===== CYCLE HELPERS =====
+function cycleEndDate(start) {
+  const e = new Date(start);
+  e.setMonth(e.getMonth()+1);
+  e.setDate(25);
+  return e;
+}
+function dateToStr(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function cycleLabelTH(start) {
+  const end = cycleEndDate(start);
+  const fmtD = d => d.getDate()+' '+TH_MONTHS[d.getMonth()].slice(0,3)+'. '+(d.getFullYear()+543);
+  return fmtD(start)+' - '+fmtD(end);
+}
+function prevCycle() { cycleStart.setMonth(cycleStart.getMonth()-1); loadSchedule(); }
+function nextCycle() { cycleStart.setMonth(cycleStart.getMonth()+1); loadSchedule(); }
 
 async function loadSchedule(){
-  document.getElementById('sch-month-label').textContent=TH_MONTHS[schMonth-1]+' '+(schYear+543);
+  document.getElementById('sch-month-label').textContent = cycleLabelTH(cycleStart);
+  const end = cycleEndDate(cycleStart);
+  const m1 = dateToStr(cycleStart).slice(0,7);
+  const m2 = dateToStr(end).slice(0,7);
   try {
-    schedule = await apiGet('getSchedule&month='+schMonthStr());
+    const [s1, s2] = await Promise.all([
+      apiGet('getSchedule&month='+m1),
+      m1!==m2 ? apiGet('getSchedule&month='+m2) : Promise.resolve([]),
+    ]);
+    schedule = [...(Array.isArray(s1)?s1:[]), ...(Array.isArray(s2)?s2:[])];
     renderSchedule();
   } catch(e){ showMsg('โหลดตารางล้มเหลว'); }
 }
@@ -335,40 +356,36 @@ async function loadSchedule(){
 function renderSchedule(){
   const maids = (staff||[]).map(s=>s.name);
   if(!maids.length){ document.getElementById('sch-body').innerHTML='<tr><td colspan="10" class="empty">ยังไม่มีข้อมูลแม่บ้าน</td></tr>'; return; }
-
-  const daysInMonth = new Date(schYear,schMonth,0).getDate();
   const today = new Date().toISOString().slice(0,10);
-
-  // build head
+  const end = cycleEndDate(new Date(cycleStart));
   const thead = document.getElementById('sch-head');
   thead.innerHTML = '<tr><th class="date-col">วันที่</th>' +
     maids.map(m=>`<th class="maid-col">${m.split(' ')[0]}<br><span style="font-weight:400;font-size:10px">${m.split(' ').slice(1).join(' ')}</span></th>`).join('') + '</tr>';
-
-  // build map
   const schMap={};
   (schedule||[]).forEach(s=>{ schMap[s.date+'|'+s.maid]=s; });
-
-  // build body
   const tbody = document.getElementById('sch-body');
-  let html='';
-  for(let d=1;d<=daysInMonth;d++){
-    const dateStr = schYear+'-'+String(schMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const dateObj = new Date(schYear,schMonth-1,d);
-    const dow = dateObj.getDay();
+  let rows='';
+  let cur = new Date(cycleStart);
+  while(cur <= end){
+    const dateStr = dateToStr(cur);
+    const dow = cur.getDay();
     const isToday = dateStr===today;
     const isHoliday = dow===0||dow===6;
-    const dayLabel = d+' '+TH_DAYS[dow];
-    html += `<tr><td class="date-cell${isHoliday?' holiday':''}${isToday?' today':''}">${dayLabel}</td>`;
+    const dayLabel = cur.getDate()+' '+TH_DAYS[dow]+' '+TH_MONTHS[cur.getMonth()].slice(0,3);
+    rows += `<tr><td class="date-cell${isHoliday?' holiday':''}${isToday?' today':''}">${dayLabel}</td>`;
     maids.forEach(maid=>{
       const key=dateStr+'|'+maid;
       const s=schMap[key];
       const shift=s?s.shift:'-';
-      const badge=shift!=='-'?`<span class="shift-badge shift-${shift}" onclick="openShiftEdit('${dateStr}','${maid}','${shift}')">${shift}</span>`:`<span style="color:var(--gray-mid);font-size:12px;cursor:pointer" onclick="openShiftEdit('${dateStr}','${maid}','-')">+</span>`;
-      html+=`<td>${badge}</td>`;
+      const badge=shift!=='-'
+        ?`<span class="shift-badge shift-${shift}" onclick="openShiftEdit('${dateStr}','${maid}','${shift}')">${shift}</span>`
+        :`<span style="color:var(--gray-mid);font-size:12px;cursor:pointer" onclick="openShiftEdit('${dateStr}','${maid}','-')">+</span>`;
+      rows+=`<td>${badge}</td>`;
     });
-    html+='</tr>';
+    rows+='</tr>';
+    cur.setDate(cur.getDate()+1);
   }
-  tbody.innerHTML=html;
+  tbody.innerHTML=rows;
 }
 
 function openShiftEdit(date,maid,currentShift){
@@ -397,15 +414,15 @@ async function saveShiftEdit(){
 
 async function generateSchedule(){
   const label = cycleLabelTH(cycleStart);
-  if(!confirm(`สร้างตารางรอบ ${label} ให้อัตโนมัติ?\n(วันหยุดจะถูกกำหนดตามข้อมูลแม่บ้านแต่ละคน)`)) return;
+  if(!confirm('สร้างตารางรอบ '+label+' ให้อัตโนมัติ?')) return;
   const res = await apiPost({
     action:'generateSchedule',
-    startDate: dateToStr(cycleStart),
-    endDate: dateToStr(cycleEndDate(cycleStart))
+    startDate: dateToStr(new Date(cycleStart)),
+    endDate: dateToStr(cycleEndDate(new Date(cycleStart)))
   });
-  if(res.ok===false) { showMsg(res.error||'เกิดข้อผิดพลาด'); return; }
+  if(res && res.ok===false){ showMsg(res.error||'มีข้อมูลรอบนี้แล้ว'); return; }
   await loadSchedule();
-  showMsg(`สร้างตารางแล้ว ${res.count||0} รายการ`);
+  showMsg('สร้างตารางเรียบร้อย');
 }
 
 // ===== STAFF =====
