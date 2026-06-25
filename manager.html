@@ -110,6 +110,7 @@ select:focus,input:focus{border-color:var(--purple-mid);background:#fff}
 .shift-opt{padding:8px 16px;border-radius:20px;border:2px solid var(--border);cursor:pointer;font-size:14px;font-family:inherit;background:#fff;font-weight:600}
 .shift-opt.active{border-color:var(--purple-mid);background:var(--purple-light);color:var(--purple)}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="header">
@@ -163,6 +164,13 @@ select:focus,input:focus{border-color:var(--purple-mid);background:#fff}
   <div class="sch-save-bar" id="sch-save-bar" style="display:none">
     <span class="sch-changed-count" id="sch-changed-count">มีการแก้ไข 0 รายการ</span>
     <button class="btn btn-purple" style="width:auto;padding:10px 24px;margin-top:0" onclick="saveAllSchedule()">บันทึกทั้งหมด</button>
+  </div>
+  <div style="padding:14px 0 0">
+    <div style="font-size:12px;font-weight:600;color:var(--purple-mid);margin-bottom:8px">สร้างรายงานรอบนี้</div>
+    <button class="btn btn-purple" onclick="exportCycleReport()" style="max-width:280px">
+      ดาวน์โหลดรายงาน Excel รอบนี้
+    </button>
+    <div id="report-status" style="font-size:12px;color:var(--gray-mid);margin-top:6px"></div>
   </div>
   <div style="height:20px"></div>
 </div>
@@ -569,6 +577,134 @@ function switchTab(tab,el){
   el.classList.add('active');
   if(tab==='schedule') loadSchedule();
   else loadAll();
+}
+
+// ===== REPORT EXPORT =====
+async function exportCycleReport(){
+  const statusEl = document.getElementById('report-status');
+  statusEl.textContent = 'กำลังดึงข้อมูล...';
+  const start = dateToStr(new Date(cycleStart));
+  const end   = dateToStr(cycleEndDate(new Date(cycleStart)));
+
+  try {
+    const data = await apiGet(`getReport&start=${start}&end=${end}`);
+    if(!data || data.error){ statusEl.textContent='เกิดข้อผิดพลาด: '+(data?.error||''); return; }
+
+    statusEl.textContent = 'กำลังสร้างไฟล์ Excel...';
+
+    const wb = XLSX.utils.book_new();
+    const maids = (staff||[]).map(s=>s.name);
+    const TH_MONTHS_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+    // ===== Sheet 1: รายวัน =====
+    const days = [...new Set(data.rows.map(r=>r.date))].sort();
+    const maidNames = [...new Set(data.rows.map(r=>r.maid))];
+
+    // header row
+    const headerRow = ['วันที่','วัน', ...maidNames.map(m=>{
+      const s = (staff||[]).find(x=>x.name===m);
+      return m + (s?.nick?' ('+s.nick+')':'');
+    })];
+
+    const sheetRows = [headerRow];
+    days.forEach(d=>{
+      const date = new Date(d);
+      const dateStr = date.getDate()+' '+TH_MONTHS_FULL[date.getMonth()]+' '+(date.getFullYear()+543);
+      const dow = ['อา','จ','อ','พ','พฤ','ศ','ส'][date.getDay()];
+      const row = [dateStr, dow];
+      maidNames.forEach(maid=>{
+        const rec = data.rows.find(r=>r.date===d&&r.maid===maid);
+        if(!rec){ row.push('-'); return; }
+        let cell = rec.actual||'-';
+        if(rec.changed) cell = cell+' *'; // * = เปลี่ยนจากแผน
+        row.push(cell);
+      });
+      sheetRows.push(row);
+    });
+
+    const ws1 = XLSX.utils.aoa_to_sheet(sheetRows);
+
+    // กำหนดความกว้างคอลัมน์
+    ws1['!cols'] = [{wch:16},{wch:6}, ...maidNames.map(()=>({wch:20}))];
+
+    // สีหัวตาราง
+    const range = XLSX.utils.decode_range(ws1['!ref']);
+    for(let C=range.s.c; C<=range.e.c; C++){
+      const addr = XLSX.utils.encode_cell({r:0,c:C});
+      if(!ws1[addr]) continue;
+      ws1[addr].s = { font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'4C1D95'}}, alignment:{horizontal:'center'} };
+    }
+
+    // สีแถวเปลี่ยน
+    sheetRows.forEach((row, ri)=>{
+      if(ri===0) return;
+      const d = days[ri-1];
+      maidNames.forEach((maid, ci)=>{
+        const rec = data.rows.find(r=>r.date===d&&r.maid===maid);
+        if(!rec||!rec.changed) return;
+        const addr = XLSX.utils.encode_cell({r:ri, c:ci+2});
+        if(ws1[addr]) ws1[addr].s = { font:{color:{rgb:'991B1B'}}, fill:{fgColor:{rgb:'FEE2E2'}} };
+      });
+      // วันหยุด เสาร์-อาทิตย์
+      const dow = new Date(d).getDay();
+      if(dow===0||dow===6){
+        for(let C=range.s.c; C<=range.e.c; C++){
+          const addr = XLSX.utils.encode_cell({r:ri,c:C});
+          if(ws1[addr]) ws1[addr].s = {...(ws1[addr].s||{}), fill:{fgColor:{rgb:'F3F4F6'}} };
+        }
+      }
+    });
+
+    XLSX.utils.book_append_sheet(wb, ws1, 'รายงานรายวัน');
+
+    // ===== Sheet 2: สรุปรายคน =====
+    const sumHeaders = ['ชื่อ-นามสกุล','ชื่อเล่น','กะเช้า','กะบ่าย','วันหยุด','ลาป่วย','ลากิจ','ลาพักร้อน','เปลี่ยนแผน','รวม'];
+    const sumRows = [sumHeaders];
+    data.summary.forEach(s=>{
+      sumRows.push([s.name, s.nick, s.เช้า, s.บ่าย, s.หยุด, s.ลาป่วย, s.ลากิจ, s.ลาพักร้อน, s.เปลี่ยน, s.total]);
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet(sumRows);
+    ws2['!cols'] = [{wch:24},{wch:10},{wch:8},{wch:8},{wch:8},{wch:10},{wch:8},{wch:14},{wch:12},{wch:8}];
+
+    // หัวตาราง
+    sumHeaders.forEach((_,C)=>{
+      const addr = XLSX.utils.encode_cell({r:0,c:C});
+      if(ws2[addr]) ws2[addr].s = { font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'4C1D95'}}, alignment:{horizontal:'center'} };
+    });
+
+    XLSX.utils.book_append_sheet(wb, ws2, 'สรุปรายคน');
+
+    // ===== Sheet 3: รายการที่เปลี่ยนแปลง =====
+    const changedRows = data.rows.filter(r=>r.changed);
+    const changeHeaders = ['วันที่','วัน','ชื่อแม่บ้าน','แผนเดิม','จริง','หมายเหตุ'];
+    const changeData = [changeHeaders, ...changedRows.map(r=>{
+      const date = new Date(r.date);
+      const dateStr = date.getDate()+' '+TH_MONTHS_FULL[date.getMonth()]+' '+(date.getFullYear()+543);
+      return [dateStr, r.day, r.maid, r.plan, r.actual, r.remark||''];
+    })];
+
+    const ws3 = XLSX.utils.aoa_to_sheet(changeData);
+    ws3['!cols'] = [{wch:16},{wch:10},{wch:24},{wch:12},{wch:16},{wch:20}];
+    changeHeaders.forEach((_,C)=>{
+      const addr = XLSX.utils.encode_cell({r:0,c:C});
+      if(ws3[addr]) ws3[addr].s = { font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'991B1B'}}, alignment:{horizontal:'center'} };
+    });
+
+    XLSX.utils.book_append_sheet(wb, ws3, 'รายการเปลี่ยนแปลง');
+
+    // ===== บันทึกไฟล์ =====
+    const startTH = new Date(start).getDate()+TH_MONTHS_FULL[new Date(start).getMonth()].slice(0,3)+(new Date(start).getFullYear()+543);
+    const endTH   = new Date(end).getDate()+TH_MONTHS_FULL[new Date(end).getMonth()].slice(0,3)+(new Date(end).getFullYear()+543);
+    const filename = `รายงาน_HK_${startTH}-${endTH}.xlsx`;
+
+    XLSX.writeFile(wb, filename);
+    statusEl.textContent = 'ดาวน์โหลดเสร็จแล้ว: '+filename;
+
+  } catch(e) {
+    statusEl.textContent = 'เกิดข้อผิดพลาด: '+e.message;
+    console.error(e);
+  }
 }
 
 // ===== API =====

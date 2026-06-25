@@ -391,10 +391,42 @@ function renderQueueList() {
 // ===== ROOM MODAL =====
 function openRoomModal(q) {
   if(!state.loggedIn){ showMsg('กรุณาลงชื่อเข้างานก่อน'); return; }
+
+  // ===== ตรวจสอบสิทธิ์ก่อนเปิด modal =====
+  const isMine   = q.maid === state.maid;
+  const isDoing  = q.status === 'กำลังทำ';
+  const isDone   = q.status === 'VC' || q.status === 'OC';
+
+  // ห้องที่คนอื่นกำลังทำอยู่ → ห้ามเข้า
+  if(isDoing && !isMine) {
+    showMsg(`ห้อง ${q.roomNo} — ${q.maid.split(' ')[0]} กำลังทำอยู่`);
+    return;
+  }
+
+  // ห้องที่ทำเสร็จแล้ว → ดูได้แต่ไม่แก้ไข
+  if(isDone && !isMine) {
+    showMsg(`ห้อง ${q.roomNo} เสร็จแล้ว (${q.maid.split(' ')[0]})`);
+    return;
+  }
+
   curRoom = q;
   const def = DEFAULTS[q.roomType] || DEFAULTS['DLK'];
+
+  // กำหนดสถานะเริ่มต้นใน dropdown
+  let defaultStatus = 'กำลังทำ';
+  if(isDoing && isMine)  defaultStatus = 'VC';  // ตัวเองกำลังทำ → เสนอให้กด VC
+  if(isDone  && isMine)  defaultStatus = q.status;
+
   document.getElementById('modal-title').textContent = `ห้อง ${q.roomNo} (${q.roomType})`;
-  document.getElementById('modal-status').value = q.status==='รอทำ'?'กำลังทำ':q.status;
+  document.getElementById('modal-status').value = defaultStatus;
+
+  // ล็อค/ปลดล็อค dropdown ตามสิทธิ์
+  const sel = document.getElementById('modal-status');
+  sel.disabled = false;
+  if(isDone && isMine){
+    // ทำเสร็จแล้ว ไม่ควรย้อนสถานะ
+    sel.disabled = true;
+  }
 
   const tbody = document.getElementById('modal-sup');
   tbody.innerHTML = Object.entries(def).map(([item,val])=>`
@@ -407,6 +439,12 @@ function openRoomModal(q) {
 
 async function saveRoomStatus() {
   if(!curRoom) return;
+  // ตรวจสิทธิ์อีกครั้งก่อนบันทึก
+  if(curRoom.status==='กำลังทำ' && curRoom.maid && curRoom.maid!==state.maid){
+    showMsg('ไม่สามารถแก้ไขได้ — '+curRoom.maid.split(' ')[0]+' กำลังทำอยู่');
+    document.getElementById('room-overlay').classList.remove('open');
+    return;
+  }
   const status = document.getElementById('modal-status').value;
   const now = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 
