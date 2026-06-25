@@ -139,10 +139,10 @@ select:focus,input:focus{border-color:var(--purple-mid);background:#fff}
 <!-- SCHEDULE -->
 <div class="page" id="page-schedule">
   <div class="sch-controls">
-    <button class="sch-month-btn" onclick="prevMonth()">&#8249;</button>
-    <div class="sch-month-label" id="sch-month-label">--</div>
-    <button class="sch-month-btn" onclick="nextMonth()">&#8250;</button>
-    <button class="sch-gen-btn" onclick="generateSchedule()">สร้างตารางเดือนนี้</button>
+    <button class="sch-month-btn" onclick="prevCycle()">&#8249;</button>
+    <div class="sch-month-label" id="sch-month-label" style="min-width:160px">--</div>
+    <button class="sch-month-btn" onclick="nextCycle()">&#8250;</button>
+    <button class="sch-gen-btn" onclick="generateSchedule()">สร้างตารางรอบนี้</button>
   </div>
   <div style="font-size:12px;color:var(--gray-mid);margin-bottom:8px">กดที่ช่องกะเพื่อแก้ไข</div>
   <div class="sch-table-wrap">
@@ -250,7 +250,16 @@ const TH_DAYS=['อา','จ','อ','พ','พฤ','ศ','ส'];
 const TH_MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
 let queue=[], staff=[], schedule=[], leaves=[], damages=[];
-let schYear=new Date().getFullYear(), schMonth=new Date().getMonth()+1;
+// คำนวณรอบปัจจุบัน: 26 เดือนนี้ - 25 เดือนหน้า
+function currentCycleStart() {
+  const now = new Date();
+  const d = now.getDate();
+  // ถ้าวันนี้ >= 26 รอบเริ่มเดือนนี้, ถ้า < 26 รอบเริ่มเดือนที่แล้ว
+  let y = now.getFullYear(), m = now.getMonth();
+  if (d < 26) { m--; if(m<0){m=11;y--;} }
+  return new Date(y, m, 26);
+}
+let cycleStart = currentCycleStart(); // Date object วันที่ 26
 let editCell=null, editShift=null;
 let curLeave=null, curDmgRoom=null;
 
@@ -387,8 +396,13 @@ async function saveShiftEdit(){
 }
 
 async function generateSchedule(){
-  if(!confirm(`สร้างตารางเดือน${TH_MONTHS[schMonth-1]} ${schYear+543} ให้อัตโนมัติ?\n(วันหยุดจะถูกกำหนดตามข้อมูลแม่บ้านแต่ละคน)`)) return;
-  const res = await apiPost({ action:'generateSchedule', year:schYear, month:schMonth });
+  const label = cycleLabelTH(cycleStart);
+  if(!confirm(`สร้างตารางรอบ ${label} ให้อัตโนมัติ?\n(วันหยุดจะถูกกำหนดตามข้อมูลแม่บ้านแต่ละคน)`)) return;
+  const res = await apiPost({
+    action:'generateSchedule',
+    startDate: dateToStr(cycleStart),
+    endDate: dateToStr(cycleEndDate(cycleStart))
+  });
   if(res.ok===false) { showMsg(res.error||'เกิดข้อผิดพลาด'); return; }
   await loadSchedule();
   showMsg(`สร้างตารางแล้ว ${res.count||0} รายการ`);
