@@ -110,7 +110,7 @@ select:focus,input:focus{border-color:var(--pu-mid);background:#fff}
 <!-- BOARD -->
 <div class="page on" id="page-board">
   <div class="stats">
-    <div class="stat"><div class="stat-n" id="b-vc" style="color:var(--green-mid)">-</div><div class="stat-l">VC พร้อมขาย</div></div>
+    <div class="stat"><div class="stat-n" id="b-vc" style="color:var(--green-mid)">-</div><div class="stat-l">ห้องพร้อมขาย</div></div>
     <div class="stat"><div class="stat-n" id="b-doing" style="color:#db2777">-</div><div class="stat-l">กำลังทำ</div></div>
     <div class="stat"><div class="stat-n" id="b-wait" style="color:var(--red-mid)">-</div><div class="stat-l">รอทำ</div></div>
   </div>
@@ -281,9 +281,10 @@ function renderBoard(){
     if(q.status==='กำลังทำ') doing++;
     if(q.status==='รอทำ') wait++;
   });
-  document.getElementById('b-vc').textContent=vc;
-  document.getElementById('b-doing').textContent=doing;
-  document.getElementById('b-wait').textContent=wait;
+  const notReady = wait + doing + queue.filter(q=>q.status==='OOO').length;
+  document.getElementById('b-vc').textContent = 32 - notReady;
+  document.getElementById('b-doing').textContent = doing;
+  document.getElementById('b-wait').textContent = wait;
 }
 
 // ===== SCHEDULE =====
