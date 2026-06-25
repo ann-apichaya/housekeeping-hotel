@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HK - ผู้จัดการ</title>
+<style>
+:root{--purple:#4c1d95;--purple-mid:#7c3aed;--purple-light:#ede9fe;--purple-pale:#f5f3ff;--green:#065f46;--green-mid:#059669;--green-light:#d1fae5;--amber:#92400e;--amber-mid:#d97706;--amber-light:#fef3c7;--red:#991b1b;--red-mid:#dc2626;--red-light:#fee2e2;--blue:#1e40af;--blue-mid:#2563eb;--blue-light:#dbeafe;--gray:#1f2937;--gray-mid:#6b7280;--gray-light:#f9fafb;--border:#e5e7eb;--radius:10px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:var(--purple-pale);color:var(--gray);font-size:15px}
+.header{background:var(--purple);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.sub{font-size:12px;opacity:.75;margin-top:2px}
+.time-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99;overflow-x:auto}
+.tab{flex-shrink:0;text-align:center;padding:11px 14px;font-size:12px;color:var(--gray-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab.active{color:var(--purple-mid);border-color:var(--purple-mid);font-weight:600}
+.page{display:none;padding:14px}.page.active{display:block}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-head{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#fff;border-radius:var(--radius);padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-size:26px;font-weight:700;line-height:1}
+.stat-label{font-size:11px;color:var(--gray-mid);margin-top:4px}
+
+/* CONTROL BOARD */
+.floor-label{font-size:11px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;margin:12px 0 6px}
+.room-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.room-tile{border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;background:#fff}
+.room-tile .rno{font-weight:700;font-size:14px}
+.room-tile .rtype{font-size:10px;color:var(--gray-mid)}
+.room-tile .rwho{font-size:10px;margin-top:2px}
+.room-tile.vc{background:#d1fae5;border-color:#059669}.room-tile.doing{background:#fce7f3;border-color:#db2777}
+.room-tile.co{background:#fee2e2;border-color:#dc2626}.room-tile.oc{background:#dbeafe;border-color:#2563eb}
+.room-tile.ooo{background:#f3f4f6;border-color:#9ca3af}
+
+/* SCHEDULE */
+.sch-controls{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.sch-month-btn{background:var(--purple-mid);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:600}
+.sch-gen-btn{background:#fff;color:var(--purple-mid);border:1.5px solid var(--purple-mid);border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;cursor:pointer}
+.sch-month-label{font-size:16px;font-weight:700;color:var(--purple);min-width:120px;text-align:center}
+
+.sch-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sch-table{border-collapse:collapse;min-width:600px;width:100%;font-size:12px}
+.sch-table th{background:var(--purple);color:#fff;padding:8px 6px;text-align:center;white-space:nowrap;position:sticky;top:0}
+.sch-table th.date-col{min-width:80px}
+.sch-table th.maid-col{min-width:100px}
+.sch-table td{padding:6px 4px;border:1px solid var(--border);text-align:center;vertical-align:middle}
+.sch-table tr:hover td{background:var(--purple-pale)}
+.sch-table td.date-cell{font-weight:600;color:var(--gray);background:var(--gray-light);white-space:nowrap;text-align:left;padding-left:8px}
+.sch-table td.date-cell.holiday{color:#dc2626}
+.sch-table td.date-cell.today{background:var(--purple-light);color:var(--purple)}
+
+/* shift badges */
+.shift-badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;min-width:52px}
+.shift-เช้า{background:#fef3c7;color:#92400e}
+.shift-บ่าย{background:#dbeafe;color:#1e40af}
+.shift-หยุด{background:#f3f4f6;color:#6b7280}
+.shift-ลาป่วย{background:#fee2e2;color:#991b1b}
+.shift-ลากิจ{background:#fce7f3;color:#9d174d}
+.shift-ลาพักร้อน{background:#d1fae5;color:#065f46}
+
+/* STAFF CARDS */
+.staff-card{background:#fff;border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.staff-avatar{width:40px;height:40px;border-radius:50%;background:var(--purple-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--purple-mid);flex-shrink:0}
+.staff-name{font-weight:600;font-size:14px}
+.staff-detail{font-size:12px;color:var(--gray-mid);margin-top:2px}
+
+/* LAUNDRY */
+.laundry-table{width:100%;border-collapse:collapse;font-size:13px}
+.laundry-table th{background:var(--gray-light);padding:7px 8px;text-align:center;font-size:11px;color:var(--gray-mid)}
+.laundry-table td{padding:7px 8px;border-top:1px solid var(--border);text-align:center}
+.laundry-table td:first-child{text-align:left;font-weight:500}
+
+/* LEAVE & DAMAGE */
+.list-card{background:#fff;border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:8px}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+.pill-pending{background:var(--amber-light);color:var(--amber)}.pill-approved{background:var(--green-light);color:var(--green)}.pill-rejected{background:var(--gray-light);color:var(--gray-mid)}
+
+label{display:block;font-size:13px;color:var(--gray-mid);margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+select,input[type=text]{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--gray-light);outline:none}
+select:focus,input:focus{border-color:var(--purple-mid);background:#fff}
+.btn{display:block;width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;text-align:center;margin-top:8px}
+.btn-purple{background:var(--purple-mid);color:#fff}.btn-green{background:var(--green-mid);color:#fff}.btn-red{background:var(--red-mid);color:#fff}
+.btn-outline{background:#fff;color:var(--purple-mid);border:1.5px solid var(--purple-mid);margin-top:6px}
+.btn-sm{padding:6px 12px;font-size:12px;width:auto;display:inline-block;border-radius:6px;margin-top:0;margin-right:4px;border:none;cursor:pointer;font-family:inherit;font-weight:600}
+
+.section-title{font-size:12px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.empty{text-align:center;padding:28px 16px;color:var(--gray-mid);font-size:14px}
+.loading{text-align:center;padding:20px;color:var(--gray-mid);font-size:13px}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}
+.overlay.open{display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:16px 16px 0 0;width:100%;padding:20px 16px 32px;max-height:90vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
+#msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;display:none;z-index:999;white-space:nowrap}
+
+/* SHIFT SELECTOR */
+.shift-opts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.shift-opt{padding:8px 16px;border-radius:20px;border:2px solid var(--border);cursor:pointer;font-size:14px;font-family:inherit;background:#fff;font-weight:600}
+.shift-opt.active{border-color:var(--purple-mid);background:var(--purple-light);color:var(--purple)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div style="font-size:17px;font-weight:600">ผู้จัดการ</div><div class="sub" id="hd-date"></div></div>
+  <div class="time-badge" id="hd-time">--:--</div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('board',this)">Control Board</div>
+  <div class="tab" onclick="switchTab('schedule',this)">ตารางเข้างาน</div>
+  <div class="tab" onclick="switchTab('staff',this)">แม่บ้าน</div>
+  <div class="tab" onclick="switchTab('laundry',this)">ผ้าซัก</div>
+  <div class="tab" onclick="switchTab('leave',this)">การลา</div>
+  <div class="tab" onclick="switchTab('damage',this)">ค่าเสียหาย</div>
+</div>
+
+<!-- CONTROL BOARD -->
+<div class="page active" id="page-board">
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="b-vc" style="color:var(--green-mid)">-</div><div class="stat-label">VC พร้อมขาย</div></div>
+    <div class="stat"><div class="stat-num" id="b-doing" style="color:#db2777">-</div><div class="stat-label">กำลังทำ</div></div>
+    <div class="stat"><div class="stat-num" id="b-wait" style="color:var(--red-mid)">-</div><div class="stat-label">รอทำ</div></div>
+  </div>
+  <div class="floor-label">ชั้น 2</div><div class="room-grid" id="board-2"></div>
+  <div class="floor-label">ชั้น 3</div><div class="room-grid" id="board-3"></div>
+  <div class="floor-label">ชั้น 4</div><div class="room-grid" id="board-4"></div>
+  <div style="height:16px"></div>
+  <div class="card"><div class="card-body" style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px">
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:3px;background:#d1fae5;border:1px solid #059669;display:inline-block"></span>VC</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:3px;background:#fce7f3;border:1px solid #db2777;display:inline-block"></span>กำลังทำ</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:3px;background:#fee2e2;border:1px solid #dc2626;display:inline-block"></span>CO รอทำ</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:3px;background:#dbeafe;border:1px solid #2563eb;display:inline-block"></span>OC</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:3px;background:#f3f4f6;border:1px solid #9ca3af;display:inline-block"></span>OOO</span>
+  </div></div>
+</div>
+
+<!-- SCHEDULE -->
+<div class="page" id="page-schedule">
+  <div class="sch-controls">
+    <button class="sch-month-btn" onclick="prevCycle()">&#8249;</button>
+    <div class="sch-month-label" id="sch-month-label" style="min-width:160px">--</div>
+    <button class="sch-month-btn" onclick="nextCycle()">&#8250;</button>
+    <button class="sch-gen-btn" onclick="generateSchedule()">สร้างตารางรอบนี้</button>
+  </div>
+  <div style="font-size:12px;color:var(--gray-mid);margin-bottom:8px">กดที่ช่องกะเพื่อแก้ไข</div>
+  <div class="sch-table-wrap">
+    <table class="sch-table" id="sch-table">
+      <thead id="sch-head"></thead>
+      <tbody id="sch-body"><tr><td colspan="10" class="loading">กำลังโหลด...</td></tr></tbody>
+    </table>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- STAFF -->
+<div class="page" id="page-staff">
+  <div class="section-title">รายชื่อแม่บ้าน</div>
+  <div id="staff-list"><div class="loading">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- LAUNDRY -->
+<div class="page" id="page-laundry">
+  <div class="card">
+    <div class="card-head">สรุปผ้าซักวันนี้</div>
+    <div class="card-body" style="overflow-x:auto">
+      <table class="laundry-table">
+        <thead><tr><th style="text-align:left">รายการ</th><th>ส่งซัก</th><th>รับคืน</th><th>ผลต่าง</th></tr></thead>
+        <tbody id="laundry-body"><tr><td colspan="4" class="loading">กำลังโหลด...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LEAVE -->
+<div class="page" id="page-leave">
+  <div class="section-title">รออนุมัติ</div>
+  <div id="leave-pending"><div class="loading">กำลังโหลด...</div></div>
+  <div class="section-title">ประวัติการลา</div>
+  <div id="leave-history"></div>
+</div>
+
+<!-- DAMAGE -->
+<div class="page" id="page-damage">
+  <div class="section-title">รออนุมัติ</div>
+  <div id="dmg-pending"><div class="loading">กำลังโหลด...</div></div>
+  <div class="section-title">ประวัติ</div>
+  <div id="dmg-history"></div>
+</div>
+
+<!-- SHIFT EDIT MODAL -->
+<div class="overlay" id="shift-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px" id="shift-modal-title"></div>
+    <div style="font-size:13px;color:var(--gray-mid);margin-bottom:14px" id="shift-modal-sub"></div>
+    <div class="shift-opts" id="shift-opts">
+      <button class="shift-opt" onclick="selectShift('เช้า')">กะเช้า (07-16)</button>
+      <button class="shift-opt" onclick="selectShift('บ่าย')">กะบ่าย (13-22)</button>
+      <button class="shift-opt" onclick="selectShift('หยุด')">หยุด</button>
+      <button class="shift-opt" onclick="selectShift('ลาป่วย')">ลาป่วย</button>
+      <button class="shift-opt" onclick="selectShift('ลากิจ')">ลากิจ</button>
+      <button class="shift-opt" onclick="selectShift('ลาพักร้อน')">ลาพักร้อน</button>
+    </div>
+    <button class="btn btn-purple" onclick="saveShiftEdit()">บันทึก</button>
+    <button class="btn btn-outline" onclick="document.getElementById('shift-overlay').classList.remove('open')">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- LEAVE APPROVE MODAL -->
+<div class="overlay" id="leave-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:12px">คำขอลา</div>
+    <div id="leave-modal-detail"></div>
+    <button class="btn btn-green" style="margin-top:14px" onclick="approveLeave(true)">อนุมัติ</button>
+    <button class="btn btn-red" style="margin-top:6px" onclick="approveLeave(false)">ไม่อนุมัติ</button>
+    <button class="btn btn-outline" onclick="document.getElementById('leave-overlay').classList.remove('open')">ปิด</button>
+  </div>
+</div>
+
+<!-- DAMAGE MODAL -->
+<div class="overlay" id="dmg-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px">ความเสียหาย - ห้อง <span id="dm-room"></span></div>
+    <div id="dm-maid" style="font-size:13px;color:var(--gray-mid);margin-bottom:12px"></div>
+    <div id="dm-items" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px"></div>
+    <div style="background:var(--red-light);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--red)">ยอดรวม</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red-mid)">฿<span id="dm-total">0</span></div>
+    </div>
+    <button class="btn btn-green" onclick="approveDmg(true)">อนุมัติ - แจ้งเก็บเงินลูกค้า</button>
+    <button class="btn btn-red" style="margin-top:6px" onclick="approveDmg(false)">ไม่อนุมัติ</button>
+    <button class="btn btn-outline" onclick="document.getElementById('dmg-overlay').classList.remove('open')">ปิด</button>
+  </div>
+</div>
+
+<div id="msg"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzfMuRrEJDqRK5t-8vM16eP9nZsapOHf10WdQHU9Ccbnkm_Ea7Fsx9gZqQerZ4UgG5aCg/exec';
+
+const ROOMS={201:'DLT',202:'DLT',203:'DLK',204:'DLF',205:'DLK',206:'DLK',207:'DLT',208:'DLK',209:'DLK',310:'DLK',311:'DLK',312:'DLK',313:'DLK',314:'DLF',315:'DLK',316:'DLK',317:'DLK',318:'DLK',319:'DLK',320:'DLK',421:'DLT',422:'DLT',423:'DLT',424:'DLK',425:'DLK',426:'DLK',427:'DLT',428:'DLK',429:'DLT',430:'DLK',431:'DLK',432:'Suite'};
+const FLOORS={2:[201,202,203,204,205,206,207,208,209],3:[310,311,312,313,314,315,316,317,318,319,320],4:[421,422,423,424,425,426,427,428,429,430,431,432]};
+const LAUNDRY_ITEMS=['ผ้าปูเตียง','ปลอกหมอน','ปลอกผ้านวม','ผ้าขนหนู','ผ้าเช็ดตัว','ผ้าเช็ดเท้า'];
+const TH_DAYS=['อา','จ','อ','พ','พฤ','ศ','ส'];
+const TH_MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+let queue=[], staff=[], schedule=[], leaves=[], damages=[];
+// คำนวณรอบปัจจุบัน: 26 เดือนนี้ - 25 เดือนหน้า
+function currentCycleStart() {
+  const now = new Date();
+  const d = now.getDate();
+  // ถ้าวันนี้ >= 26 รอบเริ่มเดือนนี้, ถ้า < 26 รอบเริ่มเดือนที่แล้ว
+  let y = now.getFullYear(), m = now.getMonth();
+  if (d < 26) { m--; if(m<0){m=11;y--;} }
+  return new Date(y, m, 26);
+}
+let cycleStart = currentCycleStart(); // Date object วันที่ 26
+let editCell=null, editShift=null;
+let curLeave=null, curDmgRoom=null;
+
+window.onload=()=>{ startClock(); buildBoard(); loadAll(); };
+
+function startClock(){
+  const t=()=>{
+    const n=new Date();
+    document.getElementById('hd-time').textContent=n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('hd-date').textContent=n.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  };
+  t(); setInterval(t,1000);
+}
+
+async function loadAll(){
+  try {
+    [queue,staff,leaves,damages] = await Promise.all([
+      apiGet('getQueue'), apiGet('getStaff'),
+      apiGet('getLeave'), apiGet('getDamage'),
+    ]);
+    renderBoard(); renderStaff(); renderLaundry(); renderLeave(); renderDamage();
+  } catch(e){ console.error(e); }
+}
+
+// ===== BOARD =====
+function buildBoard(){
+  [2,3,4].forEach(f=>{
+    const el=document.getElementById('board-'+f);
+    el.innerHTML='';
+    FLOORS[f].forEach(no=>{
+      const d=document.createElement('div');
+      d.className='room-tile'; d.id='tile-'+no;
+      d.innerHTML=`<div class="rno">${no}</div><div class="rtype">${ROOMS[no]}</div><div class="rwho" id="tw-${no}">-</div>`;
+      el.appendChild(d);
+    });
+  });
+}
+function renderBoard(){
+  const qMap={};
+  (queue||[]).forEach(q=>qMap[Number(q.roomNo)]=q);
+  let vc=0,doing=0,wait=0;
+  Object.keys(ROOMS).forEach(no=>{
+    const q=qMap[Number(no)];
+    const tile=document.getElementById('tile-'+no);
+    const tw=document.getElementById('tw-'+no);
+    if(!tile) return;
+    if(!q){ tile.className='room-tile'; tw.textContent='-'; return; }
+    const cls={VC:'vc','กำลังทำ':'doing','รอทำ':'co',OC:'oc',OOO:'ooo'}[q.status]||'';
+    tile.className='room-tile '+cls;
+    tw.textContent=q.maid?(q.maid.split(' ')[0]||'-'):q.status;
+    if(q.status==='VC') vc++;
+    if(q.status==='กำลังทำ') doing++;
+    if(q.status==='รอทำ') wait++;
+  });
+  document.getElementById('b-vc').textContent=vc;
+  document.getElementById('b-doing').textContent=doing;
+  document.getElementById('b-wait').textContent=wait;
+}
+
+// ===== SCHEDULE =====
+// ===== CYCLE HELPERS =====
+function cycleEndDate(start) {
+  const e = new Date(start);
+  e.setMonth(e.getMonth()+1);
+  e.setDate(25);
+  return e;
+}
+function dateToStr(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function cycleLabelTH(start) {
+  const end = cycleEndDate(start);
+  const fmtD = d => d.getDate()+' '+TH_MONTHS[d.getMonth()].slice(0,3)+'. '+(d.getFullYear()+543);
+  return fmtD(start)+' - '+fmtD(end);
+}
+function prevCycle() { cycleStart.setMonth(cycleStart.getMonth()-1); loadSchedule(); }
+function nextCycle() { cycleStart.setMonth(cycleStart.getMonth()+1); loadSchedule(); }
+
+async function loadSchedule(){
+  document.getElementById('sch-month-label').textContent = cycleLabelTH(cycleStart);
+  const end = cycleEndDate(cycleStart);
+  const m1 = dateToStr(cycleStart).slice(0,7);
+  const m2 = dateToStr(end).slice(0,7);
+  try {
+    const [s1, s2] = await Promise.all([
+      apiGet('getSchedule&month='+m1),
+      m1!==m2 ? apiGet('getSchedule&month='+m2) : Promise.resolve([]),
+    ]);
+    schedule = [...(Array.isArray(s1)?s1:[]), ...(Array.isArray(s2)?s2:[])];
+    renderSchedule();
+  } catch(e){ showMsg('โหลดตารางล้มเหลว'); }
+}
+
+function renderSchedule(){
+  const maids = (staff||[]).map(s=>s.name);
+  if(!maids.length){ document.getElementById('sch-body').innerHTML='<tr><td colspan="10" class="empty">ยังไม่มีข้อมูลแม่บ้าน</td></tr>'; return; }
+  const today = new Date().toISOString().slice(0,10);
+  const end = cycleEndDate(new Date(cycleStart));
+  const thead = document.getElementById('sch-head');
+  thead.innerHTML = '<tr><th class="date-col">วันที่</th>' +
+    maids.map(m=>`<th class="maid-col">${m.split(' ')[0]}<br><span style="font-weight:400;font-size:10px">${m.split(' ').slice(1).join(' ')}</span></th>`).join('') + '</tr>';
+  const schMap={};
+  (schedule||[]).forEach(s=>{ schMap[s.date+'|'+s.maid]=s; });
+  const tbody = document.getElementById('sch-body');
+  let rows='';
+  let cur = new Date(cycleStart);
+  while(cur <= end){
+    const dateStr = dateToStr(cur);
+    const dow = cur.getDay();
+    const isToday = dateStr===today;
+    const isHoliday = dow===0||dow===6;
+    const dayLabel = cur.getDate()+' '+TH_DAYS[dow]+' '+TH_MONTHS[cur.getMonth()].slice(0,3);
+    rows += `<tr><td class="date-cell${isHoliday?' holiday':''}${isToday?' today':''}">${dayLabel}</td>`;
+    maids.forEach(maid=>{
+      const key=dateStr+'|'+maid;
+      const s=schMap[key];
+      const shift=s?s.shift:'-';
+      const badge=shift!=='-'
+        ?`<span class="shift-badge shift-${shift}" onclick="openShiftEdit('${dateStr}','${maid}','${shift}')">${shift}</span>`
+        :`<span style="color:var(--gray-mid);font-size:12px;cursor:pointer" onclick="openShiftEdit('${dateStr}','${maid}','-')">+</span>`;
+      rows+=`<td>${badge}</td>`;
+    });
+    rows+='</tr>';
+    cur.setDate(cur.getDate()+1);
+  }
+  tbody.innerHTML=rows;
+}
+
+function openShiftEdit(date,maid,currentShift){
+  editCell={date,maid};
+  editShift=currentShift;
+  document.getElementById('shift-modal-title').textContent=maid.split(' ')[0];
+  document.getElementById('shift-modal-sub').textContent=new Date(date).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.querySelectorAll('.shift-opt').forEach(b=>{
+    b.classList.toggle('active', b.textContent.includes(currentShift));
+  });
+  document.getElementById('shift-overlay').classList.add('open');
+}
+
+function selectShift(s){
+  editShift=s;
+  document.querySelectorAll('.shift-opt').forEach(b=>b.classList.toggle('active',b.textContent.includes(s)));
+}
+
+async function saveShiftEdit(){
+  if(!editCell||!editShift||editShift==='-'){ document.getElementById('shift-overlay').classList.remove('open'); return; }
+  await apiPost({ action:'saveSchedule', items:[{date:editCell.date, maid:editCell.maid, shift:editShift}], updatedBy:'ผู้จัดการ' });
+  document.getElementById('shift-overlay').classList.remove('open');
+  await loadSchedule();
+  showMsg('บันทึกแล้ว');
+}
+
+async function generateSchedule(){
+  const label = cycleLabelTH(cycleStart);
+  if(!confirm('สร้างตารางรอบ '+label+' ให้อัตโนมัติ?')) return;
+  const res = await apiPost({
+    action:'generateSchedule',
+    startDate: dateToStr(new Date(cycleStart)),
+    endDate: dateToStr(cycleEndDate(new Date(cycleStart)))
+  });
+  if(res && res.ok===false){ showMsg(res.error||'มีข้อมูลรอบนี้แล้ว'); return; }
+  await loadSchedule();
+  showMsg('สร้างตารางเรียบร้อย');
+}
+
+// ===== STAFF =====
+function renderStaff(){
+  const el=document.getElementById('staff-list');
+  if(!(staff||[]).length){ el.innerHTML='<div class="empty">ยังไม่มีข้อมูล</div>'; return; }
+  const qMap={};
+  (queue||[]).forEach(q=>{ if(!qMap[q.maid]) qMap[q.maid]={done:0,total:0}; qMap[q.maid].total++; if(q.status==='VC') qMap[q.maid].done++; });
+  el.innerHTML=staff.map(s=>{
+    const stat=qMap[s.name]||{done:0,total:0};
+    return `<div class="staff-card">
+      <div class="staff-avatar">${s.nick?s.nick[0]:s.name[0]}</div>
+      <div style="flex:1">
+        <div class="staff-name">${s.name}</div>
+        <div class="staff-detail">กะ${s.shift} · หยุด${s.dayOff||'-'} · ${s.status}</div>
+        <div style="font-size:12px;color:var(--purple-mid);margin-top:4px;font-weight:600">ทำห้อง ${stat.done}/${stat.total} ห้องวันนี้</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== LAUNDRY =====
+function renderLaundry(){
+  const laundry=[];
+  const totals={};
+  LAUNDRY_ITEMS.forEach(i=>totals[i]={send:0,recv:0});
+  laundry.forEach(r=>{
+    if(r.type==='ส่ง'){ totals['ผ้าปูเตียง'].send+=r.bedSheet||0; }
+    if(r.type==='รับ'){ totals['ผ้าปูเตียง'].recv+=r.bedSheet||0; }
+  });
+  const tbody=document.getElementById('laundry-body');
+  tbody.innerHTML=LAUNDRY_ITEMS.map(item=>{
+    const diff=totals[item].recv-totals[item].send;
+    return `<tr><td>${item}</td><td>${totals[item].send||'-'}</td><td>${totals[item].recv||'-'}</td>
+      <td style="font-weight:600;color:${diff<0?'var(--red-mid)':diff>0?'var(--green-mid)':'var(--gray-mid)'}">${diff===0?'-':diff>0?'+'+diff:diff}</td></tr>`;
+  }).join('');
+}
+
+// ===== LEAVE =====
+function renderLeave(){
+  const pending=(leaves||[]).filter(l=>l.status==='รออนุมัติ');
+  const elP=document.getElementById('leave-pending');
+  elP.innerHTML=pending.length?pending.map((l,i)=>`
+    <div class="list-card" style="border-left:4px solid var(--amber-mid);cursor:pointer" onclick="openLeave(${(leaves||[]).indexOf(l)})">
+      <div style="display:flex;justify-content:space-between"><div style="font-weight:700">${l.maid.split(' ')[0]}</div><span class="pill pill-pending">รออนุมัติ</span></div>
+      <div style="font-size:13px;color:var(--gray-mid);margin-top:4px">${l.type} · ${l.leaveDate||l.date}</div>
+      <div style="font-size:13px;margin-top:4px">${l.reason||'-'}</div>
+    </div>`).join(''):'<div class="empty">ไม่มีรายการรออนุมัติ</div>';
+
+  const done=(leaves||[]).filter(l=>l.status!=='รออนุมัติ');
+  const elH=document.getElementById('leave-history');
+  elH.innerHTML=done.length?done.slice(-10).reverse().map(l=>`
+    <div class="list-card" style="border-left:4px solid ${l.status==='อนุมัติแล้ว'?'var(--green-mid)':'var(--gray-mid)'}">
+      <div style="display:flex;justify-content:space-between"><div style="font-weight:600">${l.maid.split(' ')[0]}</div>
+      <span class="pill ${l.status==='อนุมัติแล้ว'?'pill-approved':'pill-rejected'}">${l.status}</span></div>
+      <div style="font-size:12px;color:var(--gray-mid)">${l.type} · ${l.leaveDate||l.date}</div>
+    </div>`).join(''):'<div class="empty">ยังไม่มีประวัติ</div>';
+}
+
+function openLeave(idx){
+  curLeave=idx;
+  const l=(leaves||[])[idx];
+  document.getElementById('leave-modal-detail').innerHTML=`
+    <div style="font-size:15px;font-weight:600">${l.maid}</div>
+    <div style="font-size:13px;color:var(--gray-mid);margin-top:4px">ประเภท: ${l.type}</div>
+    <div style="font-size:13px;color:var(--gray-mid)">วันที่ลา: ${l.leaveDate||l.date}</div>
+    <div style="font-size:13px;margin-top:8px">เหตุผล: ${l.reason||'-'}</div>`;
+  document.getElementById('leave-overlay').classList.add('open');
+}
+
+async function approveLeave(approved){
+  if(curLeave===null) return;
+  const l=(leaves||[])[curLeave];
+  await apiPost({ action:'approveLeave', maid:l.maid, date:l.leaveDate||l.date, type:l.type, approved, approvedBy:'ผู้จัดการ' });
+  document.getElementById('leave-overlay').classList.remove('open');
+  await loadAll();
+  showMsg(approved?'อนุมัติการลาแล้ว':'ไม่อนุมัติ');
+}
+
+// ===== DAMAGE =====
+function renderDamage(){
+  const byRoom={};
+  (damages||[]).filter(d=>d.status==='รออนุมัติ').forEach(d=>{
+    if(!byRoom[d.roomNo]) byRoom[d.roomNo]={roomNo:d.roomNo,maid:d.maid,items:[],total:0};
+    byRoom[d.roomNo].items.push(d);
+    byRoom[d.roomNo].total+=Number(d.total)||0;
+  });
+  const pending=Object.values(byRoom);
+  const elP=document.getElementById('dmg-pending');
+  elP.innerHTML=pending.length?pending.map(g=>`
+    <div class="list-card" style="border-left:4px solid var(--red-mid);cursor:pointer" onclick="openDmg(${g.roomNo})">
+      <div style="display:flex;justify-content:space-between"><div style="font-size:18px;font-weight:700">ห้อง ${g.roomNo}</div><span class="pill pill-pending">รออนุมัติ</span></div>
+      <div style="font-size:13px;color:var(--gray-mid)">${g.items.map(i=>i.item).join(', ')}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--red-mid)">฿${g.total.toLocaleString()}</div>
+    </div>`).join(''):'<div class="empty">ไม่มีรายการ</div>';
+
+  const done=(damages||[]).filter(d=>d.status!=='รออนุมัติ');
+  const elH=document.getElementById('dmg-history');
+  elH.innerHTML=done.length?done.slice(-10).reverse().map(d=>`
+    <div class="list-card" style="border-left:4px solid ${d.status==='อนุมัติแล้ว'?'var(--green-mid)':'var(--gray-mid)'}">
+      <div style="display:flex;justify-content:space-between"><div style="font-weight:600">ห้อง ${d.roomNo}</div>
+      <span class="pill ${d.status==='อนุมัติแล้ว'?'pill-approved':'pill-rejected'}">${d.status}</span></div>
+      <div style="font-size:13px;color:var(--gray-mid)">${d.item}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--red-mid)">฿${Number(d.total).toLocaleString()}</div>
+    </div>`).join(''):'<div class="empty">ยังไม่มีประวัติ</div>';
+}
+
+function openDmg(roomNo){
+  curDmgRoom=roomNo;
+  const items=(damages||[]).filter(d=>d.roomNo==roomNo&&d.status==='รออนุมัติ');
+  const total=items.reduce((s,d)=>s+Number(d.total),0);
+  document.getElementById('dm-room').textContent=roomNo;
+  document.getElementById('dm-maid').textContent=items[0]?.maid||'';
+  document.getElementById('dm-total').textContent=total.toLocaleString();
+  document.getElementById('dm-items').innerHTML=items.map(d=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">
+      <span>${d.item} × ${d.qty}</span><span style="font-weight:600">฿${Number(d.total).toLocaleString()}</span>
+    </div>`).join('');
+  document.getElementById('dmg-overlay').classList.add('open');
+}
+
+async function approveDmg(approved){
+  await apiPost({ action:'approveDamage', roomNo:curDmgRoom, approved, approvedBy:'ผู้จัดการ' });
+  document.getElementById('dmg-overlay').classList.remove('open');
+  await loadAll();
+  showMsg(approved?'อนุมัติแล้ว':'ไม่อนุมัติ');
+}
+
+// ===== TABS =====
+function switchTab(tab,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  el.classList.add('active');
+  if(tab==='schedule') loadSchedule();
+  else loadAll();
+}
+
+// ===== API =====
+function apiGet(action){
+  return new Promise((resolve,reject)=>{
+    const cb='hk_cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    window[cb]=(d)=>{ resolve(Array.isArray(d)?d:(d||[])); delete window[cb]; s.remove(); };
+    s.onerror=()=>{ reject(new Error('Network error')); s.remove(); };
+    s.src=API+'?action='+action+'&callback='+cb+'&t='+Date.now();
+    document.head.appendChild(s);
+    setTimeout(()=>reject(new Error('Timeout')),12000);
+  });
+}
+async function apiPost(data){
+  try { await fetch(API,{method:'POST',mode:'no-cors',body:JSON.stringify(data)}); } catch(e){}
+  return { ok:true };
+}
+function showMsg(text){
+  const el=document.getElementById('msg');
+  el.textContent=text; el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+</script>
+</body>
+</html>
