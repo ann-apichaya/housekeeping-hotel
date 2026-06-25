@@ -77,7 +77,7 @@ select:focus{border-color:var(--blue-mid);background:#fff}
   <div class="stats">
     <div class="stat"><div class="stat-num" id="st-wait" style="color:var(--red-mid)">-</div><div class="stat-label">CO รอทำ</div></div>
     <div class="stat"><div class="stat-num" id="st-doing" style="color:#db2777">-</div><div class="stat-label">กำลังทำ</div></div>
-    <div class="stat"><div class="stat-num" id="st-vc" style="color:var(--green-mid)">-</div><div class="stat-label">VC พร้อมขาย</div></div>
+    <div class="stat"><div class="stat-num" id="st-vc" style="color:var(--green-mid)">-</div><div class="stat-label">ห้องพร้อมขาย</div></div>
   </div>
   <div class="section-title">รายการห้องวันนี้</div>
   <div id="board-list"><div class="loading">กำลังโหลด...</div></div>
@@ -202,9 +202,19 @@ function renderBoard() {
 }
 
 function updateStats() {
-  document.getElementById('st-wait').textContent  = queue.filter(q=>q.status==='รอทำ').length;
-  document.getElementById('st-doing').textContent = queue.filter(q=>q.status==='กำลังทำ').length;
-  document.getElementById('st-vc').textContent    = queue.filter(q=>q.status==='VC').length;
+  const totalRooms = 32; // ห้องทั้งหมด
+  const waiting = queue.filter(q=>q.status==='รอทำ').length;
+  const doing   = queue.filter(q=>q.status==='กำลังทำ').length;
+  const ooo     = queue.filter(q=>q.status==='OOO').length;
+  const oc      = queue.filter(q=>q.status==='OC').length;
+  const vc      = queue.filter(q=>q.status==='VC').length;
+  // ห้องที่ไม่อยู่ในคิวเลย = ว่างสะอาดพร้อมขาย
+  const notInQueue = totalRooms - queue.length;
+  const readyToSell = vc + notInQueue;
+
+  document.getElementById('st-wait').textContent  = waiting;
+  document.getElementById('st-doing').textContent = doing;
+  document.getElementById('st-vc').textContent    = readyToSell;
 }
 
 // ===== ASSIGN =====

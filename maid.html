@@ -473,16 +473,27 @@ async function saveRoomStatus() {
 
   const btn = document.querySelector('#room-overlay .btn-green');
   btn.textContent='กำลังบันทึก...'; btn.disabled=true;
-  const res = await postAPI(payload);
+
+  // อัปเดต local queue ทันที ไม่รอ server
+  const qIdx = queue.findIndex(q=>String(q.roomNo)===String(curRoom.roomNo));
+  if(qIdx >= 0) {
+    queue[qIdx].status = status;
+    queue[qIdx].maid   = state.maid;
+    if(status==='กำลังทำ') queue[qIdx].startTime = now;
+    if(status==='VC'||status==='OC') queue[qIdx].endTime = now;
+  }
+
+  // ปิด modal และ render ทันที
+  document.getElementById('room-overlay').classList.remove('open');
+  renderMyRooms();
+  renderQueueList();
+  showMsg(`ห้อง ${curRoom.roomNo} → ${status}`);
   btn.textContent='บันทึกสถานะ'; btn.disabled=false;
 
-  if(res.ok !== false) {
-    document.getElementById('room-overlay').classList.remove('open');
-    await loadQueue();
-    showMsg(`ห้อง ${curRoom.roomNo} → ${status}`);
-  } else {
-    showMsg('เกิดข้อผิดพลาด กรุณาลองใหม่');
-  }
+  // ส่งข้อมูลไป server แบบ background
+  apiPost(payload).then(() => {
+    setTimeout(() => loadQueue(), 2000);
+  });
 }
 
 // ===== DAMAGE =====
