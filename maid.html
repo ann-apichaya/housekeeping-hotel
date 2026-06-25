@@ -575,6 +575,11 @@ async function saveLaundry(type) {
     bodyTowel:  g(p+'-btowel'),
     footTowel:  g(p+'-ftowel'),
   });
+  // ล้างฟอร์มคืนเป็น 0 หลังบันทึก เพื่อไม่ให้ค้างเมื่อแม่บ้านคนอื่นเข้ามา
+  ['bed7','bed3','pillow','duvet','htowel','btowel','ftowel'].forEach(f=>{
+    const el = document.getElementById(p+'-'+f);
+    if(el) el.value = 0;
+  });
   showMsg(`บันทึก${type}ผ้าซักเรียบร้อย`);
 }
 
