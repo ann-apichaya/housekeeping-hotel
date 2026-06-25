@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>HK - Front Office</title>
+<style>
+:root{--blue:#1e40af;--blue-mid:#2563eb;--blue-light:#dbeafe;--green:#065f46;--green-mid:#059669;--green-light:#d1fae5;--red:#991b1b;--red-mid:#dc2626;--red-light:#fee2e2;--amber:#92400e;--amber-light:#fef3c7;--gray:#1f2937;--gray-mid:#6b7280;--gray-light:#f9fafb;--border:#e5e7eb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:#eef2ff;color:var(--gray);font-size:15px}
+.hdr{background:var(--blue);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-title{font-size:17px;font-weight:600}
+.hdr-sub{font-size:12px;opacity:.75;margin-top:2px}
+.time-b{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99}
+.tab{flex:1;text-align:center;padding:11px 4px;font-size:13px;color:var(--gray-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab.on{color:var(--blue-mid);border-color:var(--blue-mid);font-weight:600}
+.page{display:none;padding:14px}.page.on{display:block}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px}
+.card-h{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between}
+.card-b{padding:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stat-n{font-size:28px;font-weight:700;line-height:1}
+.stat-l{font-size:11px;color:var(--gray-mid);margin-top:4px}
+.room-card{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;border-left:4px solid var(--border);margin-bottom:8px}
+.room-card.co{border-color:var(--red-mid)}.room-card.oc{border-color:var(--blue-mid)}.room-card.vc{border-color:var(--green-mid)}.room-card.doing{border-color:#db2777}.room-card.ooo{border-color:var(--gray-mid)}
+.room-no{font-size:20px;font-weight:700;min-width:48px}
+.room-info{flex:1}.room-type{font-size:12px;color:var(--gray-mid)}.room-who{font-size:12px;color:var(--gray-mid);margin-top:2px}
+.pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.pill-co{background:var(--red-light);color:var(--red)}.pill-oc{background:var(--blue-light);color:var(--blue)}.pill-vc{background:var(--green-light);color:var(--green)}.pill-doing{background:#fce7f3;color:#9d174d}.pill-ooo{background:var(--gray-light);color:var(--gray-mid)}
+label{display:block;font-size:13px;color:var(--gray-mid);margin-bottom:4px;margin-top:12px}
+label:first-child{margin-top:0}
+select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--gray-light);outline:none}
+select:focus{border-color:var(--blue-mid);background:#fff}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;margin-top:10px}
+.btn-blue{background:var(--blue-mid);color:#fff}.btn-red{background:var(--red-mid);color:#fff}
+.btn-sm{padding:5px 10px;font-size:12px;width:auto;display:inline-block;border-radius:6px;margin-top:0;border:none;cursor:pointer;font-family:inherit;font-weight:600}
+.add-form{background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:14px}
+.add-form h3{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:10px}
+.floor-l{font-size:11px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;margin:10px 0 6px}
+.room-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.rpick{border:1.5px solid var(--border);border-radius:7px;padding:10px 4px;text-align:center;cursor:pointer;background:#fff;font-size:13px;font-weight:600;font-family:inherit;transition:all .15s;color:var(--gray)}
+.rpick.sel{background:#1d4ed8;color:#fff;border-color:#1d4ed8;box-shadow:0 2px 8px rgba(29,78,216,.35);transform:scale(1.06)}
+.rpick.used{background:#f0fdf4;color:#15803d;border-color:#86efac;cursor:default}
+.rpick.used::after{content:'✓';display:block;font-size:10px;color:#15803d}
+.sel-sum{margin-top:10px;font-size:13px;color:var(--blue);font-weight:600}
+.sec-title{font-size:12px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.empty{text-align:center;padding:32px 16px;color:var(--gray-mid);font-size:14px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}.overlay.on{display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:16px 16px 0 0;width:100%;padding:20px 16px 32px;max-height:90vh;overflow-y:auto}
+.modal-h{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
+.dmg-card{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:8px;border-left:4px solid var(--red-mid);cursor:pointer}
+#msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;display:none;z-index:999;white-space:nowrap}
+.badge{background:var(--red-mid);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:6px}
+.refresh-btn{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div><div class="hdr-title">Front Office</div><div class="hdr-sub" id="hd-date"></div></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="refresh-btn" onclick="loadAll()">รีเฟรช</button>
+    <div class="time-b" id="hd-time">--:--</div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('board',this)">ภาพรวม</div>
+  <div class="tab" onclick="switchTab('assign',this)">มอบหมายห้อง</div>
+  <div class="tab" onclick="switchTab('damage',this)">ความเสียหาย<span class="badge" id="dmg-badge" style="display:none">0</span></div>
+</div>
+
+<!-- BOARD -->
+<div class="page on" id="page-board">
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="st-co" style="color:var(--red-mid)">-</div><div class="stat-l">CO รอทำ</div></div>
+    <div class="stat"><div class="stat-n" id="st-doing" style="color:#db2777">-</div><div class="stat-l">กำลังทำ</div></div>
+    <div class="stat"><div class="stat-n" id="st-vc" style="color:var(--green-mid)">-</div><div class="stat-l">ห้องพร้อมขาย</div></div>
+  </div>
+  <div class="sec-title">รายการห้องวันนี้</div>
+  <div id="board-list"><div class="empty">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- ASSIGN -->
+<div class="page" id="page-assign">
+  <div class="add-form">
+    <h3>เพิ่มห้องที่ต้องทำวันนี้</h3>
+    <label>ประเภทงาน</label>
+    <select id="task-type">
+      <option value="CO">CO - เช็คเอาท์ (ทำความสะอาดเต็มรูปแบบ)</option>
+      <option value="OC">OC - แขกพักต่อ (เปลี่ยนผ้า/เติมของ)</option>
+      <option value="OOO">OOO - ปิดซ่อม</option>
+    </select>
+    <label>เลือกห้อง</label>
+    <div class="floor-l">ชั้น 2</div><div class="room-grid" id="pick-2"></div>
+    <div class="floor-l">ชั้น 3</div><div class="room-grid" id="pick-3"></div>
+    <div class="floor-l">ชั้น 4</div><div class="room-grid" id="pick-4"></div>
+    <div class="sel-sum" id="sel-sum"></div>
+    <button class="btn btn-blue" id="btn-add" onclick="addRooms()">เพิ่มเข้ารายการ</button>
+  </div>
+  <div class="sec-title">รายการที่มอบหมายแล้ว</div>
+  <div id="assigned-list"><div class="empty">ยังไม่มีรายการ</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- DAMAGE -->
+<div class="page" id="page-damage">
+  <div class="sec-title">รออนุมัติ</div>
+  <div id="dmg-list"><div class="empty">ไม่มีรายการ</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- DAMAGE MODAL -->
+<div class="overlay" id="dmg-ov" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="modal">
+    <div class="modal-h"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px">ห้อง <span id="dm-room"></span></div>
+    <div id="dm-maid" style="font-size:13px;color:var(--gray-mid);margin-bottom:12px"></div>
+    <div id="dm-items" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px"></div>
+    <div style="background:var(--red-light);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--red)">ยอดรวมค่าเสียหาย</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red-mid)">฿<span id="dm-total">0</span></div>
+    </div>
+    <button class="btn btn-blue" onclick="approveDmg(true)" style="background:var(--green-mid)">อนุมัติ - แจ้งเก็บเงินลูกค้า</button>
+    <button class="btn btn-red" style="margin-top:6px" onclick="approveDmg(false)">ไม่อนุมัติ</button>
+    <button class="btn" style="background:var(--gray-light);color:var(--gray);margin-top:6px" onclick="document.getElementById('dmg-ov').classList.remove('on')">ปิด</button>
+  </div>
+</div>
+<div id="msg"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzZiJ-qbXionyyZaTHRSJ5yjN4BsCNgYjWEEkpyXCAgxPvHHU-tf4Oaam0EhtWzCWv-dg/exec';
+const TOTAL_ROOMS = 32;
+const ROOMS = {201:'DLT',202:'DLT',203:'DLK',204:'DLF',205:'DLK',206:'DLK',207:'DLT',208:'DLK',209:'DLK',310:'DLK',311:'DLK',312:'DLK',313:'DLK',314:'DLF',315:'DLK',316:'DLK',317:'DLK',318:'DLK',319:'DLK',320:'DLK',421:'DLT',422:'DLT',423:'DLT',424:'DLK',425:'DLK',426:'DLK',427:'DLT',428:'DLK',429:'DLT',430:'DLK',431:'DLK',432:'Suite'};
+const FLOORS = {2:[201,202,203,204,205,206,207,208,209],3:[310,311,312,313,314,315,316,317,318,319,320],4:[421,422,423,424,425,426,427,428,429,430,431,432]};
+
+let queue=[], damages=[], selected=new Set(), curDmgRoom=null;
+
+window.onload = () => { startClock(); buildPickers(); loadAll(); setInterval(loadAll,30000); };
+
+function startClock(){
+  const t=()=>{
+    const n=new Date();
+    document.getElementById('hd-time').textContent=n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('hd-date').textContent=n.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  };
+  t(); setInterval(t,1000);
+}
+
+async function loadAll(){
+  try {
+    const [q,d] = await Promise.all([get('getQueue'), get('getDamage')]);
+    queue   = Array.isArray(q)?q:[];
+    damages = Array.isArray(d)?d:[];
+    renderBoard(); renderAssigned(); renderDamage(); updateAddedStyle();
+  } catch(e){ console.error('loadAll',e); }
+}
+
+// ===== GET/POST =====
+function get(action){ return fetch(API+'?action='+action+'&t='+Date.now()).then(r=>r.json()).catch(()=>[]); }
+function post(data){ return fetch(API,{method:'POST',body:JSON.stringify(data)}).then(r=>r.json()).catch(()=>({ok:true})); }
+
+// ===== BOARD =====
+function renderBoard(){
+  const order={รอทำ:0,'กำลังทำ':1,VC:2,OOO:3,OC:4};
+  const sorted=[...queue].sort((a,b)=>(order[a.status]??5)-(order[b.status]??5));
+  const el=document.getElementById('board-list');
+  if(!sorted.length){el.innerHTML='<div class="empty">ยังไม่มีรายการ กดแท็บ "มอบหมายห้อง"</div>';updateStats();return;}
+  el.innerHTML=sorted.map(q=>`
+    <div class="room-card ${sc(q.status)}">
+      <div class="room-no">${q.roomNo}</div>
+      <div class="room-info">
+        <div class="room-type">${q.roomType} · ${tl(q.taskType)}</div>
+        <div class="room-who">${q.maid?'แม่บ้าน: '+q.maid.split(' ')[0]:'รอแม่บ้านรับงาน'} · เพิ่ม ${q.addedAt}</div>
+      </div>
+      <span class="pill ${pc(q.status,q.taskType)}">${ps(q.status,q.taskType)}</span>
+    </div>`).join('');
+  updateStats();
+}
+
+function updateStats(){
+  const wait=queue.filter(q=>q.status==='รอทำ').length;
+  const doing=queue.filter(q=>q.status==='กำลังทำ').length;
+  const notReady=queue.filter(q=>q.status==='รอทำ'||q.status==='กำลังทำ'||q.status==='OOO').length;
+  document.getElementById('st-co').textContent=wait;
+  document.getElementById('st-doing').textContent=doing;
+  document.getElementById('st-vc').textContent=TOTAL_ROOMS-notReady;
+}
+
+// ===== ASSIGN =====
+function buildPickers(){
+  [2,3,4].forEach(f=>{
+    const el=document.getElementById('pick-'+f);
+    FLOORS[f].forEach(no=>{
+      const b=document.createElement('button');
+      b.className='rpick'; b.id='pb-'+no; b.textContent=no;
+      b.onclick=()=>togglePick(no,b);
+      el.appendChild(b);
+    });
+  });
+}
+
+function togglePick(no,btn){
+  if(btn.classList.contains('used')) return;
+  if(selected.has(no)){selected.delete(no);btn.classList.remove('sel');}
+  else{selected.add(no);btn.classList.add('sel');}
+  document.getElementById('sel-sum').textContent=selected.size?`เลือก ${selected.size} ห้อง: ${[...selected].sort((a,b)=>a-b).join(', ')}`:'';
+}
+
+function updateAddedStyle(){
+  const used=new Set(queue.map(q=>Number(q.roomNo)));
+  Object.keys(ROOMS).forEach(no=>{
+    const b=document.getElementById('pb-'+no); if(!b) return;
+    if(used.has(parseInt(no))){b.classList.add('used');b.classList.remove('sel');selected.delete(parseInt(no));}
+    else b.classList.remove('used');
+  });
+  document.getElementById('sel-sum').textContent=selected.size?`เลือก ${selected.size} ห้อง: ${[...selected].sort((a,b)=>a-b).join(', ')}`:'';
+}
+
+async function addRooms(){
+  if(!selected.size){showMsg('กรุณาเลือกห้องก่อน');return;}
+  const taskType=document.getElementById('task-type').value;
+  const btn=document.getElementById('btn-add');
+  btn.textContent='กำลังบันทึก...'; btn.disabled=true;
+  await Promise.all([...selected].map(no=>post({action:'addQueue',roomNo:no,roomType:ROOMS[no],taskType,addedBy:'FO'})));
+  selected.clear();
+  document.querySelectorAll('.rpick.sel').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('sel-sum').textContent='';
+  btn.textContent='เพิ่มเข้ารายการ'; btn.disabled=false;
+  await loadAll();
+  showMsg('เพิ่มห้องเข้ารายการแล้ว');
+}
+
+async function removeRoom(no){
+  if(!confirm(`ลบห้อง ${no} ออกจากรายการ?`)) return;
+  await post({action:'removeQueue',roomNo:no});
+  await loadAll();
+  showMsg(`ลบห้อง ${no} แล้ว`);
+}
+
+function renderAssigned(){
+  const el=document.getElementById('assigned-list');
+  if(!queue.length){el.innerHTML='<div class="empty">ยังไม่มีรายการ</div>';return;}
+  el.innerHTML=queue.map(q=>`
+    <div class="room-card ${sc(q.status)}" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="room-no">${q.roomNo}</div>
+        <div><div style="font-size:13px;font-weight:600">${tl(q.taskType)}</div><div style="font-size:12px;color:var(--gray-mid)">${q.roomType}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="pill ${pc(q.status,q.taskType)}">${ps(q.status,q.taskType)}</span>
+        ${q.status==='รอทำ'||q.status==='OOO'?`<button class="btn-sm btn-red" onclick="removeRoom(${q.roomNo})">ลบ</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+// ===== DAMAGE =====
+function renderDamage(){
+  const byRoom={};
+  damages.filter(d=>d.status==='รออนุมัติ').forEach(d=>{
+    if(!byRoom[d.roomNo]) byRoom[d.roomNo]={roomNo:d.roomNo,maid:d.maid,items:[],total:0};
+    byRoom[d.roomNo].items.push(d);
+    byRoom[d.roomNo].total+=Number(d.total)||0;
+  });
+  const list=Object.values(byRoom);
+  const badge=document.getElementById('dmg-badge');
+  badge.textContent=list.length; badge.style.display=list.length?'inline':'none';
+  const el=document.getElementById('dmg-list');
+  el.innerHTML=list.length?list.map(g=>`
+    <div class="dmg-card" onclick="openDmg('${g.roomNo}')">
+      <div style="display:flex;justify-content:space-between">
+        <div style="font-size:18px;font-weight:700">ห้อง ${g.roomNo}</div>
+        <span class="pill" style="background:var(--amber-light);color:var(--amber)">รออนุมัติ</span>
+      </div>
+      <div style="font-size:13px;color:var(--gray-mid);margin-top:4px">${g.items.map(i=>i.item+' ×'+i.qty).join(', ')}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--red-mid);margin-top:4px">฿${g.total.toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--gray-mid)">แจ้งโดย ${g.maid}</div>
+    </div>`).join(''):'<div class="empty">ไม่มีรายการรออนุมัติ</div>';
+}
+
+function openDmg(roomNo){
+  curDmgRoom=roomNo;
+  const items=damages.filter(d=>d.roomNo==roomNo&&d.status==='รออนุมัติ');
+  const total=items.reduce((s,d)=>s+Number(d.total),0);
+  document.getElementById('dm-room').textContent=roomNo;
+  document.getElementById('dm-maid').textContent='แจ้งโดย '+(items[0]?.maid||'');
+  document.getElementById('dm-total').textContent=total.toLocaleString();
+  document.getElementById('dm-items').innerHTML=items.map(d=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">
+      <span>${d.item} × ${d.qty}</span><span style="font-weight:600">฿${Number(d.total).toLocaleString()}</span>
+    </div>`).join('');
+  document.getElementById('dmg-ov').classList.add('on');
+}
+
+async function approveDmg(approved){
+  await post({action:'approveDamage',roomNo:curDmgRoom,approved,approvedBy:'FO'});
+  document.getElementById('dmg-ov').classList.remove('on');
+  await loadAll();
+  showMsg(approved?'อนุมัติแล้ว':'ไม่อนุมัติ');
+}
+
+// ===== HELPERS =====
+function sc(s){return{VC:'vc','กำลังทำ':'doing','รอทำ':'co',OC:'oc',OOO:'ooo'}[s]||'';}
+function pc(s,t){return{VC:'pill-vc','กำลังทำ':'pill-doing','รอทำ':'pill-co',OC:'pill-oc',OOO:'pill-ooo'}[s]||'pill-co';}
+function ps(s,t){return{VC:'VC พร้อมขาย','กำลังทำ':'กำลังทำ','รอทำ':'CO รอทำ',OC:'OC',OOO:'OOO ปิดซ่อม'}[s]||s;}
+function tl(t){return t==='CO'?'ทำความสะอาด':t==='OC'?'เปลี่ยนผ้า':'ปิดซ่อม';}
+function switchTab(t,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('page-'+t).classList.add('on'); el.classList.add('on');
+  loadAll();
+}
+function showMsg(txt){
+  const el=document.getElementById('msg');
+  el.textContent=txt; el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+</script>
+</body>
+</html>

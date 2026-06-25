@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>HK - ผู้จัดการ</title>
+<style>
+:root{--pu:#4c1d95;--pu-mid:#7c3aed;--pu-light:#ede9fe;--pu-pale:#f5f3ff;--green:#065f46;--green-mid:#059669;--green-light:#d1fae5;--amber:#92400e;--amber-light:#fef3c7;--red:#991b1b;--red-mid:#dc2626;--red-light:#fee2e2;--blue:#1e40af;--blue-mid:#2563eb;--blue-light:#dbeafe;--gray:#1f2937;--gray-mid:#6b7280;--gray-light:#f9fafb;--border:#e5e7eb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:var(--pu-pale);color:var(--gray);font-size:15px}
+.hdr{background:var(--pu);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.hdr-title{font-size:17px;font-weight:600}
+.hdr-sub{font-size:12px;opacity:.75;margin-top:2px}
+.time-b{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99;overflow-x:auto}
+.tab{flex-shrink:0;text-align:center;padding:11px 14px;font-size:12px;color:var(--gray-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab.on{color:var(--pu-mid);border-color:var(--pu-mid);font-weight:600}
+.page{display:none;padding:14px}.page.on{display:block}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px}
+.card-h{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.card-b{padding:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stat-n{font-size:26px;font-weight:700;line-height:1}.stat-l{font-size:11px;color:var(--gray-mid);margin-top:4px}
+.floor-l{font-size:11px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;margin:12px 0 6px}
+.room-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tile{border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;background:#fff}
+.tile .rno{font-weight:700;font-size:14px}.tile .rtype{font-size:10px;color:var(--gray-mid)}.tile .rwho{font-size:10px;margin-top:2px}
+.tile.vc{background:#d1fae5;border-color:#059669}.tile.doing{background:#fce7f3;border-color:#db2777}
+.tile.co{background:#fee2e2;border-color:#dc2626}.tile.oc{background:#dbeafe;border-color:#2563eb}.tile.ooo{background:#f3f4f6;border-color:#9ca3af}
+/* SCHEDULE */
+.sch-ctrl{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.sch-nav{background:var(--pu-mid);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:600}
+.sch-lbl{font-size:16px;font-weight:700;color:var(--pu);min-width:160px;text-align:center}
+.sch-gen{background:#fff;color:var(--pu-mid);border:1.5px solid var(--pu-mid);border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;cursor:pointer}
+.sch-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sch-tbl{border-collapse:collapse;min-width:600px;width:100%;font-size:12px}
+.sch-tbl th{background:var(--pu);color:#fff;padding:8px 6px;text-align:center;white-space:nowrap}
+.sch-tbl td{padding:6px 4px;border:1px solid var(--border);text-align:center;vertical-align:middle}
+.sch-tbl tr:hover td{background:var(--pu-pale)}
+.date-cell{font-weight:600;color:var(--gray);background:var(--gray-light);text-align:left;padding-left:8px;white-space:nowrap}
+.date-cell.hol{color:var(--red-mid)}.date-cell.today{background:var(--pu-light);color:var(--pu)}
+.sch-sel{border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;padding:3px 2px;width:80px;cursor:pointer;outline:none;background:#fff}
+.sch-sel.s-เช้า{background:#fef3c7;color:#92400e;border-color:#d97706}
+.sch-sel.s-บ่าย{background:#dbeafe;color:#1e40af;border-color:#2563eb}
+.sch-sel.s-หยุด{background:#f3f4f6;color:#6b7280;border-color:#9ca3af}
+.sch-sel.s-ลาป่วย{background:#fee2e2;color:#991b1b;border-color:#dc2626}
+.sch-sel.s-ลากิจ{background:#fce7f3;color:#9d174d;border-color:#db2777}
+.sch-sel.s-ลาพักร้อน{background:#d1fae5;color:#065f46;border-color:#059669}
+.save-bar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--pu-mid);padding:12px 14px;display:none;align-items:center;justify-content:space-between;z-index:50;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.save-bar.show{display:flex}
+.changed-n{font-size:13px;color:var(--pu);font-weight:600}
+/* STAFF */
+.staff-card{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.s-avatar{width:40px;height:40px;border-radius:50%;background:var(--pu-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--pu-mid);flex-shrink:0}
+/* LAUNDRY */
+.lau-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.lau-tbl th{background:var(--gray-light);padding:7px 8px;text-align:center;font-size:11px;color:var(--gray-mid)}
+.lau-tbl td{padding:7px 8px;border-top:1px solid var(--border);text-align:center}
+.lau-tbl td:first-child{text-align:left;font-weight:500}
+/* DAMAGE */
+.dmg-card{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:8px;border-left:4px solid var(--red-mid);cursor:pointer}
+/* PERFORMANCE */
+.perf-card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px;overflow:hidden}
+.perf-hd{padding:12px 14px;background:var(--pu);color:#fff;display:flex;align-items:center;justify-content:space-between}
+.perf-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.perf-tbl th{background:var(--gray-light);padding:8px 10px;text-align:center;font-size:11px;color:var(--gray-mid)}
+.perf-tbl th:first-child{text-align:left}
+.perf-tbl td{padding:8px 10px;border-top:1px solid var(--border);text-align:center}
+.perf-tbl td:first-child{text-align:left;font-weight:500}
+.over{background:var(--red-light);color:var(--red);font-weight:700}
+.warn-box{background:var(--amber-light);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--amber);margin:10px 14px}
+/* MISC */
+label{display:block;font-size:13px;color:var(--gray-mid);margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+select,input[type=text]{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--gray-light);outline:none}
+select:focus,input:focus{border-color:var(--pu-mid);background:#fff}
+.btn{display:block;width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-pu{background:var(--pu-mid);color:#fff}.btn-green{background:var(--green-mid);color:#fff}.btn-red{background:var(--red-mid);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px;width:auto;display:inline-block;border-radius:6px;margin-top:0;border:none;cursor:pointer;font-family:inherit;font-weight:600}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+.pill-ok{background:var(--green-light);color:var(--green)}.pill-ng{background:var(--gray-light);color:var(--gray-mid)}.pill-wait{background:var(--amber-light);color:var(--amber)}
+.sec-title{font-size:12px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.empty{text-align:center;padding:28px 16px;color:var(--gray-mid);font-size:14px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}.overlay.on{display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:16px 16px 0 0;width:100%;padding:20px 16px 32px;max-height:90vh;overflow-y:auto}
+.modal-h{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
+.refresh-btn{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+#msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;display:none;z-index:999;white-space:nowrap}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="hdr">
+  <div><div class="hdr-title">ผู้จัดการ</div><div class="hdr-sub" id="hd-date"></div></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="refresh-btn" onclick="loadAll()">รีเฟรช</button>
+    <div class="time-b" id="hd-time">--:--</div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="sw('board',this)">Control Board</div>
+  <div class="tab" onclick="sw('schedule',this)">ตารางเข้างาน</div>
+  <div class="tab" onclick="sw('staff',this)">แม่บ้าน</div>
+  <div class="tab" onclick="sw('laundry',this)">ผ้าซัก</div>
+  <div class="tab" onclick="sw('damage',this)">ค่าเสียหาย</div>
+  <div class="tab" onclick="sw('perf',this)">ประเมินแม่บ้าน</div>
+</div>
+
+<!-- BOARD -->
+<div class="page on" id="page-board">
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="b-vc" style="color:var(--green-mid)">-</div><div class="stat-l">VC พร้อมขาย</div></div>
+    <div class="stat"><div class="stat-n" id="b-doing" style="color:#db2777">-</div><div class="stat-l">กำลังทำ</div></div>
+    <div class="stat"><div class="stat-n" id="b-wait" style="color:var(--red-mid)">-</div><div class="stat-l">รอทำ</div></div>
+  </div>
+  <div class="floor-l">ชั้น 2</div><div class="room-grid" id="board-2"></div>
+  <div class="floor-l">ชั้น 3</div><div class="room-grid" id="board-3"></div>
+  <div class="floor-l">ชั้น 4</div><div class="room-grid" id="board-4"></div>
+  <div style="height:16px"></div>
+  <div class="card"><div class="card-b" style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px">
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#d1fae5;border:1px solid #059669;display:inline-block"></span>VC</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#fce7f3;border:1px solid #db2777;display:inline-block"></span>กำลังทำ</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#fee2e2;border:1px solid #dc2626;display:inline-block"></span>CO รอทำ</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#dbeafe;border:1px solid #2563eb;display:inline-block"></span>OC</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#f3f4f6;border:1px solid #9ca3af;display:inline-block"></span>OOO</span>
+  </div></div>
+</div>
+
+<!-- SCHEDULE -->
+<div class="page" id="page-schedule">
+  <div class="sch-ctrl">
+    <button class="sch-nav" onclick="prevCycle()">&#8249;</button>
+    <div class="sch-lbl" id="sch-lbl">--</div>
+    <button class="sch-nav" onclick="nextCycle()">&#8250;</button>
+    <button class="sch-gen" onclick="genSchedule()">สร้างตารางรอบนี้</button>
+  </div>
+  <div style="font-size:12px;color:var(--gray-mid);margin-bottom:8px">กดที่ช่องกะเพื่อแก้ไข แล้วกดบันทึกด้านล่าง</div>
+  <div class="sch-wrap"><table class="sch-tbl"><thead id="sch-head"></thead><tbody id="sch-body"><tr><td colspan="5" class="empty">กำลังโหลด...</td></tr></tbody></table></div>
+  <div class="save-bar" id="save-bar">
+    <span class="changed-n" id="changed-n">มีการแก้ไข 0 รายการ</span>
+    <button class="btn btn-pu" style="width:auto;padding:10px 24px;margin-top:0" onclick="saveAll()">บันทึกทั้งหมด</button>
+  </div>
+  <div style="padding:14px 0 0">
+    <div style="font-size:12px;font-weight:600;color:var(--pu-mid);margin-bottom:8px">รายงานและ Archive</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-pu" onclick="exportExcel()" style="width:auto;padding:10px 16px;margin-top:0">ดาวน์โหลด Excel รอบนี้</button>
+      <button class="btn" onclick="doArchive()" style="width:auto;padding:10px 16px;margin-top:0;background:#b45309;color:#fff">Archive รอบนี้</button>
+    </div>
+    <div id="rpt-status" style="font-size:12px;color:var(--gray-mid);margin-top:8px"></div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- STAFF -->
+<div class="page" id="page-staff">
+  <div class="sec-title">รายชื่อแม่บ้าน</div>
+  <div id="staff-list"><div class="empty">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- LAUNDRY -->
+<div class="page" id="page-laundry">
+  <div class="card">
+    <div class="card-h">สรุปผ้าซักวันนี้</div>
+    <div class="card-b" style="overflow-x:auto">
+      <table class="lau-tbl">
+        <thead><tr><th style="text-align:left">รายการ</th><th>ส่งซัก</th><th>รับคืน</th><th>ผลต่าง</th></tr></thead>
+        <tbody id="lau-body"><tr><td colspan="4" class="empty">กำลังโหลด...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DAMAGE -->
+<div class="page" id="page-damage">
+  <div class="sec-title">รออนุมัติ</div>
+  <div id="dmg-pend"><div class="empty">ไม่มีรายการ</div></div>
+  <div class="sec-title">ประวัติ</div>
+  <div id="dmg-hist"></div>
+</div>
+
+<!-- PERF -->
+<div class="page" id="page-perf">
+  <div class="sch-ctrl">
+    <button class="sch-nav" onclick="prevPerf()">&#8249;</button>
+    <div class="sch-lbl" id="perf-lbl">--</div>
+    <button class="sch-nav" onclick="nextPerf()">&#8250;</button>
+    <button class="sch-gen" onclick="loadPerf()">โหลดรายงาน</button>
+  </div>
+  <div id="perf-content"><div class="empty">กดโหลดรายงาน</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- DAMAGE MODAL -->
+<div class="overlay" id="dmg-ov" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="modal">
+    <div class="modal-h"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px">ความเสียหาย - ห้อง <span id="dm-room"></span></div>
+    <div id="dm-maid" style="font-size:13px;color:var(--gray-mid);margin-bottom:12px"></div>
+    <div id="dm-items" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px"></div>
+    <div style="background:var(--red-light);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--red)">ยอดรวม</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red-mid)">฿<span id="dm-total">0</span></div>
+    </div>
+    <button class="btn btn-green" onclick="approveDmg(true)">อนุมัติ</button>
+    <button class="btn btn-red" style="margin-top:6px" onclick="approveDmg(false)">ไม่อนุมัติ</button>
+    <button class="btn" style="background:var(--gray-light);color:var(--gray);margin-top:6px" onclick="document.getElementById('dmg-ov').classList.remove('on')">ปิด</button>
+  </div>
+</div>
+<div id="msg"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzZiJ-qbXionyyZaTHRSJ5yjN4BsCNgYjWEEkpyXCAgxPvHHU-tf4Oaam0EhtWzCWv-dg/exec';
+const ROOMS={201:'DLT',202:'DLT',203:'DLK',204:'DLF',205:'DLK',206:'DLK',207:'DLT',208:'DLK',209:'DLK',310:'DLK',311:'DLK',312:'DLK',313:'DLK',314:'DLF',315:'DLK',316:'DLK',317:'DLK',318:'DLK',319:'DLK',320:'DLK',421:'DLT',422:'DLT',423:'DLT',424:'DLK',425:'DLK',426:'DLK',427:'DLT',428:'DLK',429:'DLT',430:'DLK',431:'DLK',432:'Suite'};
+const FLOORS={2:[201,202,203,204,205,206,207,208,209],3:[310,311,312,313,314,315,316,317,318,319,320],4:[421,422,423,424,425,426,427,428,429,430,431,432]};
+const TH_M=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_D=['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+let queue=[], staff=[], damages=[], schedule=[], laundry=[];
+let cycleStart=getCycleStart(), perfCycle=null, pendingChanges={}, curDmgRoom=null;
+
+window.onload=()=>{ startClock(); buildBoard(); loadAll(); };
+
+function getCycleStart(){
+  const n=new Date(), d=n.getDate();
+  let y=n.getFullYear(), m=n.getMonth();
+  if(d<26){m--; if(m<0){m=11;y--;}}
+  return new Date(y,m,26);
+}
+function cycleEnd(s){ const e=new Date(s); e.setMonth(e.getMonth()+1); e.setDate(25); return e; }
+function d2s(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function cycleLbl(s){ const e=cycleEnd(s); const f=d=>d.getDate()+' '+TH_M[d.getMonth()].slice(0,3)+'. '+(d.getFullYear()+543); return f(s)+' - '+f(e); }
+
+function startClock(){
+  const t=()=>{
+    const n=new Date();
+    document.getElementById('hd-time').textContent=n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('hd-date').textContent=n.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  };
+  t(); setInterval(t,1000);
+}
+
+// ===== API =====
+function get(action){ return fetch(API+'?action='+action+'&t='+Date.now()).then(r=>r.json()).catch(()=>[]); }
+function post(data){ return fetch(API,{method:'POST',body:JSON.stringify(data)}).then(r=>r.json()).catch(()=>({ok:true})); }
+
+async function loadAll(){
+  try{
+    [queue,staff,damages,laundry]=await Promise.all([get('getQueue'),get('getStaff'),get('getDamage'),get('getLaundry')]);
+    renderBoard(); renderStaff(); renderLaundry(); renderDamage();
+  }catch(e){console.error(e);}
+}
+
+// ===== BOARD =====
+function buildBoard(){
+  [2,3,4].forEach(f=>{
+    const el=document.getElementById('board-'+f); el.innerHTML='';
+    FLOORS[f].forEach(no=>{
+      const d=document.createElement('div');
+      d.className='tile'; d.id='tile-'+no;
+      d.innerHTML=`<div class="rno">${no}</div><div class="rtype">${ROOMS[no]}</div><div class="rwho" id="tw-${no}">-</div>`;
+      el.appendChild(d);
+    });
+  });
+}
+
+function renderBoard(){
+  const qMap={}; queue.forEach(q=>qMap[Number(q.roomNo)]=q);
+  let vc=0,doing=0,wait=0;
+  Object.keys(ROOMS).forEach(no=>{
+    const q=qMap[Number(no)];
+    const tile=document.getElementById('tile-'+no);
+    const tw=document.getElementById('tw-'+no);
+    if(!tile) return;
+    if(!q){tile.className='tile';tw.textContent='-';return;}
+    const cls={VC:'vc','กำลังทำ':'doing','รอทำ':'co',OC:'oc',OOO:'ooo'}[q.status]||'';
+    tile.className='tile '+cls;
+    tw.textContent=q.maid?(q.maid.split(' ')[0]||'-'):q.status;
+    if(q.status==='VC') vc++;
+    if(q.status==='กำลังทำ') doing++;
+    if(q.status==='รอทำ') wait++;
+  });
+  document.getElementById('b-vc').textContent=vc;
+  document.getElementById('b-doing').textContent=doing;
+  document.getElementById('b-wait').textContent=wait;
+}
+
+// ===== SCHEDULE =====
+function prevCycle(){ cycleStart.setMonth(cycleStart.getMonth()-1); loadSchedule(); }
+function nextCycle(){ cycleStart.setMonth(cycleStart.getMonth()+1); loadSchedule(); }
+
+async function loadSchedule(){
+  document.getElementById('sch-lbl').textContent=cycleLbl(cycleStart);
+  const end=cycleEnd(cycleStart);
+  const m1=d2s(cycleStart).slice(0,7), m2=d2s(end).slice(0,7);
+  try{
+    const [s1,s2]=await Promise.all([get('getSchedule&month='+m1), m1!==m2?get('getSchedule&month='+m2):Promise.resolve([])]);
+    schedule=[...(Array.isArray(s1)?s1:[]),...(Array.isArray(s2)?s2:[])];
+    renderSchedule();
+  }catch(e){showMsg('โหลดตารางล้มเหลว');}
+}
+
+function renderSchedule(){
+  const maids=(staff||[]).map(s=>s.name);
+  if(!maids.length){document.getElementById('sch-body').innerHTML='<tr><td colspan="5" class="empty">ยังไม่มีข้อมูลแม่บ้าน</td></tr>';return;}
+  const today=new Date().toISOString().slice(0,10);
+  const end=cycleEnd(new Date(cycleStart));
+  document.getElementById('sch-head').innerHTML='<tr><th style="min-width:100px">วันที่</th>'+maids.map(m=>`<th style="min-width:90px">${m.split(' ')[0]}<br><span style="font-weight:400;font-size:10px">${m.split(' ').slice(1).join(' ')}</span></th>`).join('')+'</tr>';
+  const schMap={}; schedule.forEach(s=>{ schMap[s.date+'|'+s.maid]=s; });
+  let rows='';
+  let cur=new Date(cycleStart);
+  while(cur<=end){
+    const ds=d2s(cur), dow=cur.getDay();
+    const isTd=ds===today, isHol=dow===0||dow===6;
+    const lbl=cur.getDate()+' '+TH_D[dow]+' '+TH_M[cur.getMonth()].slice(0,3);
+    rows+=`<tr><td class="date-cell${isHol?' hol':''}${isTd?' today':''}">${lbl}</td>`;
+    maids.forEach((maid,mi)=>{
+      const s=schMap[ds+'|'+maid]; const shift=s?s.shift:'';
+      const id=`sc_${ds}_${mi}`;
+      const opts=['เช้า','บ่าย','หยุด','ลาป่วย','ลากิจ','ลาพักร้อน'];
+      rows+=`<td><select class="sch-sel s-${shift}" id="${id}" data-date="${ds}" data-maid="${maid}" data-orig="${shift}" onchange="onChg(this)"><option value=""></option>${opts.map(o=>`<option value="${o}"${o===shift?' selected':''}>${o}</option>`).join('')}</select></td>`;
+    });
+    rows+='</tr>';
+    cur.setDate(cur.getDate()+1);
+  }
+  document.getElementById('sch-body').innerHTML=rows;
+  pendingChanges={};
+  document.getElementById('save-bar').classList.remove('show');
+}
+
+function onChg(sel){
+  const key=sel.dataset.date+'|'+sel.dataset.maid;
+  sel.className='sch-sel s-'+sel.value;
+  if(sel.value!==sel.dataset.orig) pendingChanges[key]={date:sel.dataset.date,maid:sel.dataset.maid,shift:sel.value};
+  else delete pendingChanges[key];
+  const n=Object.keys(pendingChanges).length;
+  document.getElementById('changed-n').textContent='มีการแก้ไข '+n+' รายการ';
+  document.getElementById('save-bar').classList.toggle('show',n>0);
+}
+
+async function saveAll(){
+  const items=Object.values(pendingChanges); if(!items.length) return;
+  const btn=document.querySelector('#save-bar .btn-pu');
+  btn.textContent='กำลังบันทึก...'; btn.disabled=true;
+  await post({action:'saveSchedule',items,updatedBy:'ผู้จัดการ'});
+  pendingChanges={};
+  document.getElementById('save-bar').classList.remove('show');
+  btn.textContent='บันทึกทั้งหมด'; btn.disabled=false;
+  document.querySelectorAll('.sch-sel').forEach(s=>s.dataset.orig=s.value);
+  showMsg('บันทึกแล้ว '+items.length+' รายการ');
+}
+
+async function genSchedule(){
+  if(!confirm('สร้างตาราง '+cycleLbl(cycleStart)+' อัตโนมัติ?')) return;
+  const res=await post({action:'generateSchedule',startDate:d2s(new Date(cycleStart)),endDate:d2s(cycleEnd(new Date(cycleStart)))});
+  if(res&&res.ok===false){showMsg(res.error||'มีข้อมูลอยู่แล้ว');return;}
+  await loadSchedule();
+  showMsg('สร้างตารางแล้ว '+res.count+' รายการ');
+}
+
+// ===== EXCEL EXPORT =====
+async function exportExcel(){
+  const st=d2s(new Date(cycleStart)), en=d2s(cycleEnd(new Date(cycleStart)));
+  const statusEl=document.getElementById('rpt-status');
+  statusEl.textContent='กำลังดึงข้อมูล...';
+  const data=await get('getCycleReport&start='+st+'&end='+en);
+  if(!data||data.error){statusEl.textContent='เกิดข้อผิดพลาด: '+(data?.error||'');return;}
+  statusEl.textContent='กำลังสร้างไฟล์...';
+  const wb=XLSX.utils.book_new();
+  const maids=[...new Set(data.rows.map(r=>r.maid))];
+  const days=[...new Set(data.rows.map(r=>r.date))].sort();
+  // Sheet 1
+  const h1=['วันที่','วัน',...maids.map(m=>{const s=(staff||[]).find(x=>x.name===m);return m+(s?.nick?' ('+s.nick+')':'');})];
+  const ws1=[h1,...days.map(d=>{
+    const dt=new Date(d);
+    return [dt.getDate()+' '+TH_M[dt.getMonth()]+' '+(dt.getFullYear()+543),TH_D[dt.getDay()],...maids.map(maid=>{const r=data.rows.find(x=>x.date===d&&x.maid===maid);return r?(r.actual+(r.changed?' *':'')):'-';})];
+  })];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws1),'รายงานรายวัน');
+  // Sheet 2
+  const ws2=[['ชื่อ','ชื่อเล่น','เช้า','บ่าย','หยุด','ลาป่วย','ลากิจ','ลาพักร้อน','เปลี่ยน','รวม'],...data.summary.map(s=>[s.name,s.nick,s.เช้า,s.บ่าย,s.หยุด,s.ลาป่วย,s.ลากิจ,s.ลาพักร้อน,s.เปลี่ยน,s.total])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws2),'สรุปรายคน');
+  // Sheet 3
+  const ws3=[['วันที่','วัน','แม่บ้าน','แผน','จริง','หมายเหตุ'],...data.rows.filter(r=>r.changed).map(r=>{const dt=new Date(r.date);return[dt.getDate()+' '+TH_M[dt.getMonth()]+' '+(dt.getFullYear()+543),r.day,r.maid,r.plan,r.actual,r.remark];})];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws3),'รายการเปลี่ยนแปลง');
+  XLSX.writeFile(wb,'รายงาน_HK_'+st+'_'+en+'.xlsx');
+  statusEl.textContent='ดาวน์โหลดเสร็จแล้ว';
+}
+
+async function doArchive(){
+  const st=d2s(new Date(cycleStart)), en=d2s(cycleEnd(new Date(cycleStart)));
+  const lbl=cycleLbl(cycleStart);
+  if(!confirm('Archive รอบ '+lbl+'?\n\nจะคัดลอกข้อมูลไปไฟล์ใหม่ และลบออกจาก Sheet หลัก')) return;
+  const statusEl=document.getElementById('rpt-status');
+  statusEl.textContent='กำลัง Archive... รอสักครู่';
+  const res=await post({action:'archiveCycle',startDate:st,endDate:en,label:st.slice(0,7)+'_'+en.slice(0,7)});
+  if(res&&res.ok){
+    statusEl.innerHTML=`Archive เสร็จแล้ว ย้าย ${res.totalRows} แถว<br><a href="${res.archiveUrl}" target="_blank" style="color:var(--pu-mid);font-weight:600">เปิด ${res.archiveName}</a>`;
+    await loadSchedule();
+  } else {
+    statusEl.textContent='เกิดข้อผิดพลาด: '+(res?.error||'');
+  }
+}
+
+// ===== STAFF =====
+function renderStaff(){
+  const el=document.getElementById('staff-list');
+  if(!(staff||[]).length){el.innerHTML='<div class="empty">ยังไม่มีข้อมูล</div>';return;}
+  const qMap={}; queue.forEach(q=>{if(!qMap[q.maid])qMap[q.maid]={done:0,total:0};qMap[q.maid].total++;if(q.status==='VC')qMap[q.maid].done++;});
+  el.innerHTML=staff.map(s=>{
+    const st=qMap[s.name]||{done:0,total:0};
+    return `<div class="staff-card">
+      <div class="s-avatar">${s.nick?s.nick[0]:s.name[0]}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px">${s.name}</div>
+        <div style="font-size:12px;color:var(--gray-mid)">กะ${s.shift} · หยุด${s.dayOff||'-'} · ${s.status}</div>
+        <div style="font-size:12px;color:var(--pu-mid);font-weight:600;margin-top:4px">ทำห้อง ${st.done}/${st.total} ห้องวันนี้</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== LAUNDRY =====
+function renderLaundry(){
+  const ITEMS=['ผ้าปูเตียง','ปลอกหมอน','ปลอกผ้านวม','ผ้าขนหนู','ผ้าเช็ดตัว','ผ้าเช็ดเท้า'];
+  const KEYS=['bedSheet','pillowCase','duvetCover','bathTowel','bodyTowel','footTowel'];
+  const totals={}; ITEMS.forEach((it,i)=>totals[it]={send:0,recv:0});
+  (laundry||[]).forEach(r=>{
+    ITEMS.forEach((it,i)=>{
+      if(r.type==='ส่ง') totals[it].send+=Number(r[KEYS[i]])||0;
+      else totals[it].recv+=Number(r[KEYS[i]])||0;
+    });
+  });
+  document.getElementById('lau-body').innerHTML=ITEMS.map(it=>{
+    const diff=totals[it].recv-totals[it].send;
+    return `<tr><td>${it}</td><td>${totals[it].send||'-'}</td><td>${totals[it].recv||'-'}</td><td style="font-weight:600;color:${diff<0?'var(--red-mid)':diff>0?'var(--green-mid)':'var(--gray-mid)'}">${diff===0?'-':diff>0?'+'+diff:diff}</td></tr>`;
+  }).join('');
+}
+
+// ===== DAMAGE =====
+function renderDamage(){
+  const byRoom={};
+  (damages||[]).filter(d=>d.status==='รออนุมัติ').forEach(d=>{
+    if(!byRoom[d.roomNo]) byRoom[d.roomNo]={roomNo:d.roomNo,maid:d.maid,items:[],total:0};
+    byRoom[d.roomNo].items.push(d); byRoom[d.roomNo].total+=Number(d.total)||0;
+  });
+  const pending=Object.values(byRoom);
+  document.getElementById('dmg-pend').innerHTML=pending.length?pending.map(g=>`
+    <div class="dmg-card" onclick="openDmg('${g.roomNo}')">
+      <div style="display:flex;justify-content:space-between"><div style="font-size:18px;font-weight:700">ห้อง ${g.roomNo}</div><span class="pill pill-wait">รออนุมัติ</span></div>
+      <div style="font-size:13px;color:var(--gray-mid)">${g.items.map(i=>i.item+' ×'+i.qty).join(', ')}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--red-mid)">฿${g.total.toLocaleString()}</div>
+    </div>`).join(''):'<div class="empty">ไม่มีรายการ</div>';
+
+  const done=(damages||[]).filter(d=>d.status!=='รออนุมัติ');
+  document.getElementById('dmg-hist').innerHTML=done.length?done.slice(-10).reverse().map(d=>`
+    <div class="dmg-card" style="border-color:${d.status==='อนุมัติแล้ว'?'var(--green-mid)':'var(--gray-mid)'}">
+      <div style="display:flex;justify-content:space-between"><div style="font-weight:600">ห้อง ${d.roomNo}</div><span class="pill ${d.status==='อนุมัติแล้ว'?'pill-ok':'pill-ng'}">${d.status}</span></div>
+      <div style="font-size:13px;color:var(--gray-mid)">${d.item}</div>
+      <div style="font-weight:700;color:var(--red-mid)">฿${Number(d.total).toLocaleString()}</div>
+    </div>`).join(''):'<div class="empty">ยังไม่มีประวัติ</div>';
+}
+
+function openDmg(rn){
+  curDmgRoom=rn;
+  const items=(damages||[]).filter(d=>d.roomNo==rn&&d.status==='รออนุมัติ');
+  const total=items.reduce((s,d)=>s+Number(d.total),0);
+  document.getElementById('dm-room').textContent=rn;
+  document.getElementById('dm-maid').textContent='แจ้งโดย '+(items[0]?.maid||'');
+  document.getElementById('dm-total').textContent=total.toLocaleString();
+  document.getElementById('dm-items').innerHTML=items.map(d=>`<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px"><span>${d.item} × ${d.qty}</span><span style="font-weight:600">฿${Number(d.total).toLocaleString()}</span></div>`).join('');
+  document.getElementById('dmg-ov').classList.add('on');
+}
+
+async function approveDmg(approved){
+  await post({action:'approveDamage',roomNo:curDmgRoom,approved,approvedBy:'ผู้จัดการ'});
+  document.getElementById('dmg-ov').classList.remove('on');
+  await loadAll(); showMsg(approved?'อนุมัติแล้ว':'ไม่อนุมัติ');
+}
+
+// ===== PERFORMANCE =====
+function prevPerf(){ if(!perfCycle) perfCycle=new Date(cycleStart); perfCycle.setMonth(perfCycle.getMonth()-1); updatePerfLbl(); }
+function nextPerf(){ if(!perfCycle) perfCycle=new Date(cycleStart); perfCycle.setMonth(perfCycle.getMonth()+1); updatePerfLbl(); }
+function updatePerfLbl(){ if(!perfCycle) perfCycle=new Date(cycleStart); document.getElementById('perf-lbl').textContent=cycleLbl(perfCycle); }
+
+async function loadPerf(){
+  if(!perfCycle) perfCycle=new Date(cycleStart);
+  updatePerfLbl();
+  const st=d2s(new Date(perfCycle)), en=d2s(cycleEnd(new Date(perfCycle)));
+  const el=document.getElementById('perf-content');
+  el.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  const data=await get('getPerformance&start='+st+'&end='+en);
+  if(!data||data.error){el.innerHTML='<div class="empty">โหลดไม่สำเร็จ</div>';return;}
+  const fmtDate=d=>{const dt=new Date(d);return dt.getDate()+' '+TH_M[dt.getMonth()]+' '+(dt.getFullYear()+543);};
+  let html='';
+  data.maids.forEach(m=>{
+    html+=`<div class="perf-card">
+      <div class="perf-hd">
+        <div><div style="font-size:15px;font-weight:700">${m.name}</div><div style="font-size:12px;opacity:.85">ทำห้อง ${m.rooms.length} ห้อง</div></div>
+        <div style="text-align:right;font-size:12px;opacity:.85">${fmtDate(data.startDate)} - ${fmtDate(data.endDate)}</div>
+      </div>
+      <div style="padding:12px 14px">
+        ${m.rooms.length?`<div style="font-size:12px;color:var(--gray-mid);margin-bottom:8px">ห้องที่ทำ: ${m.rooms.map(r=>r.roomNo+' ('+r.roomType+')').join(', ')}</div>`:'<div style="font-size:13px;color:var(--gray-mid);margin-bottom:8px">ยังไม่มีห้องที่ทำในช่วงนี้</div>'}
+        <table class="perf-tbl"><thead><tr><th>รายการ</th><th>มาตรฐาน</th><th>ใช้จริง</th><th>ส่วนต่าง</th></tr></thead><tbody>`;
+    data.items.forEach(it=>{
+      const std=m.stdTotal[it]||0, used=m.usedTotal[it]||0, diff=used-std;
+      html+=`<tr><td>${it}</td><td>${std}</td><td class="${diff>0?'over':''}">${used}</td><td class="${diff>0?'over':diff<0?'':''}"> ${diff>0?'+'+diff+'⚠':diff<0?diff:'-'}</td></tr>`;
+    });
+    html+='</tbody></table>';
+    if(m.overItems.length) html+=`<div class="warn-box">⚠ ของใช้เกิน: ${m.overItems.map(o=>o.item+' เกิน '+o.over).join(' / ')}</div>`;
+    html+='</div></div>';
+  });
+  el.innerHTML=html||'<div class="empty">ไม่มีข้อมูล</div>';
+}
+
+// ===== MISC =====
+function sw(t,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('page-'+t).classList.add('on'); el.classList.add('on');
+  if(t==='schedule') loadSchedule();
+  else if(t==='perf'){ updatePerfLbl(); }
+  else loadAll();
+}
+function showMsg(txt){
+  const el=document.getElementById('msg');
+  el.textContent=txt; el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+</script>
+</body>
+</html>
