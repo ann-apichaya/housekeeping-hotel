@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HK - Front Office</title>
+<style>
+:root{--blue:#1e40af;--blue-mid:#2563eb;--blue-light:#dbeafe;--blue-pale:#eff6ff;--green:#065f46;--green-mid:#059669;--green-light:#d1fae5;--amber:#92400e;--amber-light:#fef3c7;--red:#991b1b;--red-mid:#dc2626;--red-light:#fee2e2;--gray:#1f2937;--gray-mid:#6b7280;--gray-light:#f9fafb;--border:#e5e7eb;--radius:10px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:#eef2ff;color:var(--gray);font-size:15px}
+.header{background:var(--blue);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.sub{font-size:12px;opacity:.75;margin-top:2px}
+.time-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99}
+.tab{flex:1;text-align:center;padding:11px 4px;font-size:13px;color:var(--gray-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--blue-mid);border-color:var(--blue-mid);font-weight:600}
+.page{display:none;padding:14px}.page.active{display:block}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-head{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#fff;border-radius:var(--radius);padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-size:28px;font-weight:700;line-height:1}
+.stat-label{font-size:11px;color:var(--gray-mid);margin-top:4px}
+.room-card{background:#fff;border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;border-left:4px solid var(--border);margin-bottom:8px}
+.room-card.co{border-color:var(--red-mid)}.room-card.oc{border-color:var(--blue-mid)}.room-card.ooo{border-color:var(--gray-mid)}.room-card.vc{border-color:var(--green-mid)}.room-card.doing{border-color:#db2777}
+.room-no{font-size:20px;font-weight:700;min-width:44px}
+.room-info{flex:1}
+.room-type{font-size:12px;color:var(--gray-mid)}
+.room-who{font-size:12px;color:var(--gray-mid);margin-top:2px}
+.status-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.pill-co{background:var(--red-light);color:var(--red)}.pill-oc{background:var(--blue-light);color:var(--blue)}.pill-ooo{background:#f3f4f6;color:var(--gray-mid)}.pill-vc{background:var(--green-light);color:var(--green)}.pill-doing{background:#fce7f3;color:#9d174d}.pill-wait{background:var(--amber-light);color:var(--amber)}
+label{display:block;font-size:13px;color:var(--gray-mid);margin-bottom:4px;margin-top:12px}
+label:first-child{margin-top:0}
+select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--gray-light);outline:none}
+select:focus{border-color:var(--blue-mid);background:#fff}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;text-align:center;margin-top:10px}
+.btn-blue{background:var(--blue-mid);color:#fff}.btn-green{background:var(--green-mid);color:#fff}.btn-red{background:var(--red-mid);color:#fff}
+.btn-outline{background:#fff;color:var(--blue-mid);border:1.5px solid var(--blue-mid);margin-top:6px}
+.btn-sm{padding:5px 10px;font-size:12px;width:auto;display:inline-block;border-radius:6px;margin-top:0}
+.add-form{background:var(--blue-pale);border:1.5px solid #bfdbfe;border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.add-form h3{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:10px}
+.room-grid-pick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.room-pick-btn{border:1.5px solid var(--border);border-radius:7px;padding:10px 4px;text-align:center;cursor:pointer;background:#fff;font-size:13px;font-weight:600;font-family:inherit;transition:all .15s;color:var(--gray)}
+.room-pick-btn.selected{background:#1d4ed8;color:#fff;border-color:#1d4ed8;box-shadow:0 2px 8px rgba(29,78,216,.35);transform:scale(1.06)}
+.room-pick-btn.added{background:#f0fdf4;color:#15803d;border-color:#86efac;cursor:default}
+.room-pick-btn.added::after{content:'✓';display:block;font-size:10px;color:#15803d}
+.floor-label{font-size:11px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px}
+.sel-summary{margin-top:10px;font-size:13px;color:var(--blue);font-weight:600}
+.section-title{font-size:12px;font-weight:600;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.empty{text-align:center;padding:32px 16px;color:var(--gray-mid);font-size:14px}
+.loading{text-align:center;padding:20px;color:var(--gray-mid);font-size:13px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}
+.overlay.open{display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:16px 16px 0 0;width:100%;padding:20px 16px 32px;max-height:90vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
+#msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;display:none;z-index:999;white-space:nowrap}
+.badge{background:var(--red-mid);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:6px}
+.dmg-card{background:#fff;border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:8px;border-left:4px solid var(--red-mid);cursor:pointer}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+.pill-pending{background:var(--amber-light);color:var(--amber)}.pill-approved{background:var(--green-light);color:var(--green)}.pill-rejected{background:#f3f4f6;color:var(--gray-mid)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div style="font-size:17px;font-weight:600">Front Office</div><div class="sub" id="hd-date"></div></div>
+  <div class="time-badge" id="hd-time">--:--</div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('board',this)">ภาพรวม</div>
+  <div class="tab" onclick="switchTab('assign',this)">มอบหมายห้อง</div>
+  <div class="tab" onclick="switchTab('damage',this)">ความเสียหาย<span class="badge" id="dmg-badge" style="display:none">0</span></div>
+</div>
+
+<!-- BOARD -->
+<div class="page active" id="page-board">
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="st-wait" style="color:var(--red-mid)">-</div><div class="stat-label">CO รอทำ</div></div>
+    <div class="stat"><div class="stat-num" id="st-doing" style="color:#db2777">-</div><div class="stat-label">กำลังทำ</div></div>
+    <div class="stat"><div class="stat-num" id="st-vc" style="color:var(--green-mid)">-</div><div class="stat-label">VC พร้อมขาย</div></div>
+  </div>
+  <div class="section-title">รายการห้องวันนี้</div>
+  <div id="board-list"><div class="loading">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- ASSIGN -->
+<div class="page" id="page-assign">
+  <div class="add-form">
+    <h3>เพิ่มห้องที่ต้องทำวันนี้</h3>
+    <label>ประเภทงาน</label>
+    <select id="task-type">
+      <option value="CO">CO - เช็คเอาท์ (ทำความสะอาดเต็มรูปแบบ)</option>
+      <option value="OC">OC - แขกพักต่อ (เปลี่ยนผ้า/เติมของ)</option>
+      <option value="OOO">OOO - ปิดซ่อม</option>
+    </select>
+    <label>เลือกห้อง (เลือกได้หลายห้อง)</label>
+    <div class="floor-label">ชั้น 2</div><div class="room-grid-pick" id="pick-2"></div>
+    <div class="floor-label">ชั้น 3</div><div class="room-grid-pick" id="pick-3"></div>
+    <div class="floor-label">ชั้น 4</div><div class="room-grid-pick" id="pick-4"></div>
+    <div class="sel-summary" id="sel-summary"></div>
+    <button class="btn btn-blue" id="btn-add" onclick="addRooms()">เพิ่มเข้ารายการ</button>
+  </div>
+  <div class="section-title">รายการที่มอบหมายแล้ว</div>
+  <div id="assigned-list"><div class="loading">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- DAMAGE -->
+<div class="page" id="page-damage">
+  <div class="section-title">รออนุมัติ</div>
+  <div id="dmg-list"><div class="loading">กำลังโหลด...</div></div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- DAMAGE MODAL -->
+<div class="overlay" id="dmg-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px">ห้อง <span id="dm-room"></span></div>
+    <div id="dm-maid" style="font-size:13px;color:var(--gray-mid);margin-bottom:12px"></div>
+    <div id="dm-items" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px"></div>
+    <div style="background:var(--red-light);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--red)">ยอดรวมค่าเสียหาย</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red-mid)">฿<span id="dm-total">0</span></div>
+    </div>
+    <div id="dm-detail" style="font-size:13px;color:var(--gray-mid);margin-bottom:14px"></div>
+    <button class="btn btn-green" onclick="approveDmg(true)">อนุมัติ - แจ้งเก็บเงินลูกค้า</button>
+    <button class="btn btn-red" style="margin-top:6px" onclick="approveDmg(false)">ไม่อนุมัติ</button>
+    <button class="btn btn-outline" onclick="document.getElementById('dmg-overlay').classList.remove('open')">ปิด</button>
+  </div>
+</div>
+<div id="msg"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzZiJ-qbXionyyZaTHRSJ5yjN4BsCNgYjWEEkpyXCAgxPvHHU-tf4Oaam0EhtWzCWv-dg/exec';
+const ROOMS = {201:'DLT',202:'DLT',203:'DLK',204:'DLF',205:'DLK',206:'DLK',207:'DLT',208:'DLK',209:'DLK',310:'DLK',311:'DLK',312:'DLK',313:'DLK',314:'DLF',315:'DLK',316:'DLK',317:'DLK',318:'DLK',319:'DLK',320:'DLK',421:'DLT',422:'DLT',423:'DLT',424:'DLK',425:'DLK',426:'DLK',427:'DLT',428:'DLK',429:'DLT',430:'DLK',431:'DLK',432:'Suite'};
+const FLOORS = {2:[201,202,203,204,205,206,207,208,209],3:[310,311,312,313,314,315,316,317,318,319,320],4:[421,422,423,424,425,426,427,428,429,430,431,432]};
+
+let queue = [];
+let damages = [];
+let selected = new Set();
+let curDmgRoom = null;
+let refreshTimer = null;
+
+window.onload = () => {
+  startClock();
+  buildPickers();
+  loadAll();
+  refreshTimer = setInterval(loadAll, 15000); // refresh ทุก 15 วิ
+};
+
+function startClock() {
+  const tick = () => {
+    const n = new Date();
+    document.getElementById('hd-time').textContent = n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('hd-date').textContent = n.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  };
+  tick(); setInterval(tick,1000);
+}
+
+async function loadAll() {
+  try {
+    const [q, d] = await Promise.all([
+      apiGet('getQueue'),
+      apiGet('getDamage'),
+    ]);
+    queue = Array.isArray(q) ? q : [];
+    damages = Array.isArray(d) ? d : [];
+    renderBoard();
+    renderAssigned();
+    renderDamage();
+    updateAddedStyle();
+  } catch(e) {
+    console.error('loadAll error', e);
+  }
+}
+
+// ===== BOARD =====
+function renderBoard() {
+  const el = document.getElementById('board-list');
+  if(!queue.length){ el.innerHTML='<div class="empty">ยังไม่มีรายการห้อง<br>กดแท็บ "มอบหมายห้อง" เพื่อเพิ่ม</div>'; updateStats(); return; }
+
+  const order = {'รอทำ':0,'กำลังทำ':1,'VC':2,'OOO':3,'OC':4};
+  const sorted = [...queue].sort((a,b)=>(order[a.status]??5)-(order[b.status]??5));
+
+  el.innerHTML = sorted.map(q => {
+    const cls = sClass(q.status);
+    const pill = sPill(q.status, q.taskType);
+    const who = q.maid ? `แม่บ้าน: ${q.maid}` : 'รอแม่บ้านรับงาน';
+    const time = q.endTime ? `เสร็จ ${q.endTime}` : q.startTime ? `เริ่ม ${q.startTime}` : `เพิ่ม ${q.addedAt}`;
+    return `<div class="room-card ${cls}">
+      <div class="room-no">${q.roomNo}</div>
+      <div class="room-info">
+        <div class="room-type">${q.roomType} · ${tLabel(q.taskType)}</div>
+        <div class="room-who">${who} · ${time}</div>
+      </div>
+      <div>${pill}</div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('st-wait').textContent  = queue.filter(q=>q.status==='รอทำ').length;
+  document.getElementById('st-doing').textContent = queue.filter(q=>q.status==='กำลังทำ').length;
+  document.getElementById('st-vc').textContent    = queue.filter(q=>q.status==='VC').length;
+}
+
+// ===== ASSIGN =====
+function buildPickers() {
+  [2,3,4].forEach(f => {
+    const el = document.getElementById('pick-'+f);
+    FLOORS[f].forEach(no => {
+      const btn = document.createElement('button');
+      btn.className = 'room-pick-btn';
+      btn.id = 'pb-'+no;
+      btn.textContent = no;
+      btn.onclick = () => togglePick(no, btn);
+      el.appendChild(btn);
+    });
+  });
+}
+
+function togglePick(no, btn) {
+  if(btn.classList.contains('added')) return;
+  if(selected.has(no)){ selected.delete(no); btn.classList.remove('selected'); }
+  else { selected.add(no); btn.classList.add('selected'); }
+  document.getElementById('sel-summary').textContent = selected.size
+    ? `เลือก ${selected.size} ห้อง: ${[...selected].sort((a,b)=>a-b).join(', ')}` : '';
+}
+
+function updateAddedStyle() {
+  const addedNos = new Set(queue.map(q=>Number(q.roomNo)));
+  Object.keys(ROOMS).forEach(no => {
+    const btn = document.getElementById('pb-'+no);
+    if(!btn) return;
+    if(addedNos.has(parseInt(no))){ btn.classList.add('added'); btn.classList.remove('selected'); selected.delete(parseInt(no)); }
+    else btn.classList.remove('added');
+  });
+}
+
+async function addRooms() {
+  if(!selected.size){ showMsg('กรุณาเลือกห้องก่อน'); return; }
+  const taskType = document.getElementById('task-type').value;
+  const btn = document.getElementById('btn-add');
+  btn.textContent = 'กำลังบันทึก...'; btn.disabled = true;
+
+  const calls = [...selected].map(no =>
+    postAPI({ action:'addQueue', roomNo:no, roomType:ROOMS[no], taskType, addedBy:'FO' })
+  );
+  await Promise.all(calls);
+
+  selected.clear();
+  document.querySelectorAll('.room-pick-btn.selected').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('sel-summary').textContent = '';
+  btn.textContent = 'เพิ่มเข้ารายการ'; btn.disabled = false;
+
+  await loadAll();
+  showMsg('เพิ่มห้องเข้ารายการแล้ว');
+}
+
+async function removeRoom(roomNo) {
+  if(!confirm(`ลบห้อง ${roomNo} ออกจากรายการ?`)) return;
+  await postAPI({ action:'removeQueue', roomNo });
+  await loadAll();
+  showMsg(`ลบห้อง ${roomNo} แล้ว`);
+}
+
+function renderAssigned() {
+  const el = document.getElementById('assigned-list');
+  if(!queue.length){ el.innerHTML='<div class="empty">ยังไม่มีรายการ</div>'; return; }
+  el.innerHTML = queue.map(q => `
+    <div class="room-card ${sClass(q.status)}" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="room-no">${q.roomNo}</div>
+        <div><div style="font-size:13px;font-weight:600">${tLabel(q.taskType)}</div><div style="font-size:12px;color:var(--gray-mid)">${q.roomType}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${sPill(q.status,q.taskType)}
+        ${q.status==='รอทำ'||q.status==='OOO'?`<button class="btn-red btn btn-sm" onclick="removeRoom(${q.roomNo})">ลบ</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+// ===== DAMAGE =====
+function renderDamage() {
+  const pending = damages.filter(d=>d.status==='รออนุมัติ');
+  const badge = document.getElementById('dmg-badge');
+  badge.textContent = pending.length;
+  badge.style.display = pending.length ? 'inline' : 'none';
+
+  // groupby room
+  const byRoom = {};
+  pending.forEach(d => {
+    if(!byRoom[d.roomNo]) byRoom[d.roomNo] = {roomNo:d.roomNo, maid:d.maid, date:d.date, items:[], total:0, detail:d.detail};
+    byRoom[d.roomNo].items.push({name:d.item, qty:d.qty, price:d.price, total:d.total});
+    byRoom[d.roomNo].total += Number(d.total)||0;
+  });
+
+  const el = document.getElementById('dmg-list');
+  const groups = Object.values(byRoom);
+  if(!groups.length){ el.innerHTML='<div class="empty">ไม่มีรายการรออนุมัติ</div>'; return; }
+  el.innerHTML = groups.map(g => `
+    <div class="dmg-card" onclick="openDmg(${g.roomNo})">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:18px;font-weight:700">ห้อง ${g.roomNo}</div>
+        <span class="pill pill-pending">รออนุมัติ</span>
+      </div>
+      <div style="font-size:13px;color:var(--gray-mid);margin-top:4px">${g.items.map(i=>`${i.name} ×${i.qty}`).join(', ')}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--red-mid);margin-top:4px">฿${g.total.toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--gray-mid)">แจ้งโดย ${g.maid}</div>
+    </div>`).join('');
+}
+
+function openDmg(roomNo) {
+  curDmgRoom = roomNo;
+  const byRoom = {};
+  damages.filter(d=>d.status==='รออนุมัติ'&&d.roomNo==roomNo).forEach(d=>{
+    if(!byRoom[d.roomNo]) byRoom[d.roomNo]={maid:d.maid,items:[],total:0,detail:d.detail};
+    byRoom[d.roomNo].items.push(d);
+    byRoom[d.roomNo].total += Number(d.total)||0;
+  });
+  const g = byRoom[roomNo];
+  if(!g) return;
+  document.getElementById('dm-room').textContent = roomNo;
+  document.getElementById('dm-maid').textContent = `แจ้งโดย ${g.maid}`;
+  document.getElementById('dm-total').textContent = g.total.toLocaleString();
+  document.getElementById('dm-detail').textContent = g.detail ? `รายละเอียด: ${g.detail}` : '';
+  document.getElementById('dm-items').innerHTML = g.items.map(d=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">
+      <span>${d.item} × ${d.qty}</span>
+      <span style="font-weight:600">฿${Number(d.total).toLocaleString()}</span>
+    </div>`).join('');
+  document.getElementById('dmg-overlay').classList.add('open');
+}
+
+async function approveDmg(approved) {
+  await postAPI({ action:'approveDamage', roomNo:curDmgRoom, approved, approvedBy:'FO' });
+  document.getElementById('dmg-overlay').classList.remove('open');
+  await loadAll();
+  showMsg(approved?'อนุมัติแล้ว':'ไม่อนุมัติ');
+}
+
+// ===== HELPERS =====
+function sClass(s){ return {VC:'vc','กำลังทำ':'doing','รอทำ':'co',OC:'oc',OOO:'ooo'}[s]||''; }
+function sPill(s,t){
+  if(s==='VC') return '<span class="status-pill pill-vc">VC พร้อมขาย</span>';
+  if(s==='กำลังทำ') return '<span class="status-pill pill-doing">กำลังทำ</span>';
+  if(s==='OOO') return '<span class="status-pill pill-ooo">OOO ปิดซ่อม</span>';
+  if(t==='OC') return '<span class="status-pill pill-oc">OC</span>';
+  return '<span class="status-pill pill-co">CO รอทำ</span>';
+}
+function tLabel(t){ return t==='CO'?'ทำความสะอาด':t==='OC'?'เปลี่ยนผ้า':'ปิดซ่อม'; }
+
+function switchTab(tab,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  el.classList.add('active');
+  loadAll();
+}
+
+async function postAPI(data) {
+  try {
+    return await apiPost(data);
+  } catch(e){ console.error(e); return {error:e.message}; }
+}
+
+function showMsg(text) {
+  const el = document.getElementById('msg');
+  el.textContent=text; el.style.display='block';
+  setTimeout(()=>el.style.display='none', 2500);
+}
+
+function apiGet(action) {
+  return new Promise((resolve, reject) => {
+    const cb = 'hk_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const s = document.createElement('script');
+    window[cb] = (d) => { resolve(Array.isArray(d)?d:(d||[])); delete window[cb]; s.remove(); };
+    s.onerror = () => { reject(new Error('Network error')); s.remove(); };
+    s.src = API + '?action=' + action + '&callback=' + cb + '&t=' + Date.now();
+    document.head.appendChild(s);
+    setTimeout(() => { reject(new Error('Timeout')); }, 12000);
+  });
+}
+async function apiPost(data) {
+  try {
+    await fetch(API, { method:'POST', mode:'no-cors', body:JSON.stringify(data) });
+  } catch(e) {}
+  return { ok: true };
+}
+
+</script>
+</body>
+</html>
