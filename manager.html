@@ -423,9 +423,9 @@ function renderStaff(){
 
 // ===== LAUNDRY =====
 function renderLaundry(){
-  const ITEMS=['ผ้าปูเตียง','ปลอกหมอน','ปลอกผ้านวม','ผ้าขนหนู','ผ้าเช็ดตัว','ผ้าเช็ดเท้า'];
-  const KEYS=['bedSheet','pillowCase','duvetCover','bathTowel','bodyTowel','footTowel'];
-  const totals={}; ITEMS.forEach((it,i)=>totals[it]={send:0,recv:0});
+  const ITEMS=['ผ้าปูเตียง 7 ฟุต','ผ้าปูเตียง 3.5 ฟุต','ปลอกหมอน','ปลอกผ้านวม','ผ้าขนหนู','ผ้าเช็ดตัว','ผ้าเช็ดเท้า'];
+  const KEYS=['bedSheet7','bedSheet35','pillowCase','duvetCover','bathTowel','bodyTowel','footTowel'];
+  const totals={}; ITEMS.forEach((it)=>totals[it]={send:0,recv:0});
   (laundry||[]).forEach(r=>{
     ITEMS.forEach((it,i)=>{
       if(r.type==='ส่ง') totals[it].send+=Number(r[KEYS[i]])||0;

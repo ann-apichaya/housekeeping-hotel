@@ -123,7 +123,8 @@ textarea{min-height:72px;resize:vertical}
   <div class="card">
     <div class="card-head">ส่งผ้าซัก</div>
     <div class="card-body">
-      <div class="lrow"><span>ผ้าปูเตียง</span><input type="number" id="ls-bed" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าปูเตียง 7 ฟุต</span><input type="number" id="ls-bed7" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าปูเตียง 3.5 ฟุต</span><input type="number" id="ls-bed3" min="0" value="0"></div>
       <div class="lrow"><span>ปลอกหมอน</span><input type="number" id="ls-pillow" min="0" value="0"></div>
       <div class="lrow"><span>ปลอกผ้านวม</span><input type="number" id="ls-duvet" min="0" value="0"></div>
       <div class="lrow"><span>ผ้าขนหนู</span><input type="number" id="ls-htowel" min="0" value="0"></div>
@@ -135,7 +136,8 @@ textarea{min-height:72px;resize:vertical}
   <div class="card">
     <div class="card-head">รับผ้าคืน</div>
     <div class="card-body">
-      <div class="lrow"><span>ผ้าปูเตียง</span><input type="number" id="lr-bed" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าปูเตียง 7 ฟุต</span><input type="number" id="lr-bed7" min="0" value="0"></div>
+      <div class="lrow"><span>ผ้าปูเตียง 3.5 ฟุต</span><input type="number" id="lr-bed3" min="0" value="0"></div>
       <div class="lrow"><span>ปลอกหมอน</span><input type="number" id="lr-pillow" min="0" value="0"></div>
       <div class="lrow"><span>ปลอกผ้านวม</span><input type="number" id="lr-duvet" min="0" value="0"></div>
       <div class="lrow"><span>ผ้าขนหนู</span><input type="number" id="lr-htowel" min="0" value="0"></div>
@@ -562,14 +564,16 @@ async function submitDamage() {
 // ===== LAUNDRY =====
 async function saveLaundry(type) {
   const p = type==='ส่ง' ? 'ls' : 'lr';
-  await postAPI({
+  const g = (id) => +(document.getElementById(id)?.value||0);
+  await apiPost({
     action:'saveLaundry', type, shift:state.shift, maid:state.maid,
-    bedSheet: +document.getElementById(p+'-bed').value||0,
-    pillowCase: +document.getElementById(p+'-pillow').value||0,
-    duvetCover: +document.getElementById(p+'-duvet').value||0,
-    bathTowel: +document.getElementById(p+'-htowel').value||0,
-    bodyTowel: +document.getElementById(p+'-btowel').value||0,
-    footTowel: +document.getElementById(p+'-ftowel').value||0,
+    bedSheet7:  g(p+'-bed7'),
+    bedSheet35: g(p+'-bed3'),
+    pillowCase: g(p+'-pillow'),
+    duvetCover: g(p+'-duvet'),
+    bathTowel:  g(p+'-htowel'),
+    bodyTowel:  g(p+'-btowel'),
+    footTowel:  g(p+'-ftowel'),
   });
   showMsg(`บันทึก${type}ผ้าซักเรียบร้อย`);
 }
