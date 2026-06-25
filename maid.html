@@ -635,24 +635,36 @@ function apiGet(action) {
   });
 }
 async function apiPost(data) {
-  console.log('apiPost called, action=', data.action, 'supplyUsed=', JSON.stringify(data.supplyUsed||{}));
-  try {
-    // ใช้ JSONP workaround: แปลง POST เป็น GET พร้อม callback
-    // เพื่อหลีกเลี่ยงปัญหา no-cors ที่ตัด body ออก
-    const cb = 'hk_post_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    return await new Promise((resolve) => {
-      const s = document.createElement('script');
-      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-      window[cb] = (d) => { resolve(d||{ok:true}); delete window[cb]; s.remove(); };
-      s.onerror = () => { resolve({ok:true}); s.remove(); };
-      s.src = API + '?action=' + (data.action||'') + '&payload=' + encodeURIComponent(encoded) + '&callback=' + cb + '&t=' + Date.now();
-      document.head.appendChild(s);
-      setTimeout(() => { resolve({ok:true}); }, 15000);
-    });
-  } catch(e) {
-    console.error('apiPost error:', e);
-    return { ok: false, error: e.message };
-  }
+  // ใช้ form submit ผ่าน hidden iframe — วิธีเดียวที่ผ่าน CORS ของ Apps Script ได้
+  return new Promise((resolve) => {
+    const iframe = document.createElement('iframe');
+    iframe.name = 'hk_iframe_' + Date.now();
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = API;
+    form.target = iframe.name;
+    form.style.display = 'none';
+
+    // ใส่ข้อมูลเป็น field เดียว
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = JSON.stringify(data);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    // cleanup หลัง 3 วิ
+    setTimeout(() => {
+      try { document.body.removeChild(form); } catch(e){}
+      try { document.body.removeChild(iframe); } catch(e){}
+      resolve({ok: true});
+    }, 3000);
+  });
 }
 
 </script>
