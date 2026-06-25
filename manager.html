@@ -52,13 +52,22 @@ body{font-family:Sarabun,sans-serif;background:var(--purple-pale);color:var(--gr
 .sch-table td.date-cell.today{background:var(--purple-light);color:var(--purple)}
 
 /* shift badges */
-.shift-badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;min-width:52px}
+.shift-badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;min-width:52px}
 .shift-เช้า{background:#fef3c7;color:#92400e}
 .shift-บ่าย{background:#dbeafe;color:#1e40af}
 .shift-หยุด{background:#f3f4f6;color:#6b7280}
 .shift-ลาป่วย{background:#fee2e2;color:#991b1b}
 .shift-ลากิจ{background:#fce7f3;color:#9d174d}
 .shift-ลาพักร้อน{background:#d1fae5;color:#065f46}
+.sch-select{border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;padding:3px 2px;width:80px;cursor:pointer;outline:none;background:#fff}
+.sch-select.s-เช้า{background:#fef3c7;color:#92400e;border-color:#d97706}
+.sch-select.s-บ่าย{background:#dbeafe;color:#1e40af;border-color:#2563eb}
+.sch-select.s-หยุด{background:#f3f4f6;color:#6b7280;border-color:#9ca3af}
+.sch-select.s-ลาป่วย{background:#fee2e2;color:#991b1b;border-color:#dc2626}
+.sch-select.s-ลากิจ{background:#fce7f3;color:#9d174d;border-color:#db2777}
+.sch-select.s-ลาพักร้อน{background:#d1fae5;color:#065f46;border-color:#059669}
+.sch-save-bar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--purple-mid);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;z-index:50;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.sch-changed-count{font-size:13px;color:var(--purple);font-weight:600}
 
 /* STAFF CARDS */
 .staff-card{background:#fff;border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:8px;display:flex;align-items:center;gap:12px}
@@ -151,6 +160,10 @@ select:focus,input:focus{border-color:var(--purple-mid);background:#fff}
       <tbody id="sch-body"><tr><td colspan="10" class="loading">กำลังโหลด...</td></tr></tbody>
     </table>
   </div>
+  <div class="sch-save-bar" id="sch-save-bar" style="display:none">
+    <span class="sch-changed-count" id="sch-changed-count">มีการแก้ไข 0 รายการ</span>
+    <button class="btn btn-purple" style="width:auto;padding:10px 24px;margin-top:0" onclick="saveAllSchedule()">บันทึกทั้งหมด</button>
+  </div>
   <div style="height:20px"></div>
 </div>
 
@@ -188,25 +201,6 @@ select:focus,input:focus{border-color:var(--purple-mid);background:#fff}
   <div id="dmg-pending"><div class="loading">กำลังโหลด...</div></div>
   <div class="section-title">ประวัติ</div>
   <div id="dmg-history"></div>
-</div>
-
-<!-- SHIFT EDIT MODAL -->
-<div class="overlay" id="shift-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:4px" id="shift-modal-title"></div>
-    <div style="font-size:13px;color:var(--gray-mid);margin-bottom:14px" id="shift-modal-sub"></div>
-    <div class="shift-opts" id="shift-opts">
-      <button class="shift-opt" onclick="selectShift('เช้า')">กะเช้า (07-16)</button>
-      <button class="shift-opt" onclick="selectShift('บ่าย')">กะบ่าย (13-22)</button>
-      <button class="shift-opt" onclick="selectShift('หยุด')">หยุด</button>
-      <button class="shift-opt" onclick="selectShift('ลาป่วย')">ลาป่วย</button>
-      <button class="shift-opt" onclick="selectShift('ลากิจ')">ลากิจ</button>
-      <button class="shift-opt" onclick="selectShift('ลาพักร้อน')">ลาพักร้อน</button>
-    </div>
-    <button class="btn btn-purple" onclick="saveShiftEdit()">บันทึก</button>
-    <button class="btn btn-outline" onclick="document.getElementById('shift-overlay').classList.remove('open')">ยกเลิก</button>
-  </div>
 </div>
 
 <!-- LEAVE APPROVE MODAL -->
@@ -373,14 +367,14 @@ function renderSchedule(){
     const isHoliday = dow===0||dow===6;
     const dayLabel = cur.getDate()+' '+TH_DAYS[dow]+' '+TH_MONTHS[cur.getMonth()].slice(0,3);
     rows += `<tr><td class="date-cell${isHoliday?' holiday':''}${isToday?' today':''}">${dayLabel}</td>`;
-    maids.forEach(maid=>{
+    maids.forEach((maid,mi)=>{
       const key=dateStr+'|'+maid;
       const s=schMap[key];
-      const shift=s?s.shift:'-';
-      const badge=shift!=='-'
-        ?`<span class="shift-badge shift-${shift}" onclick="openShiftEdit('${dateStr}','${maid}','${shift}')">${shift}</span>`
-        :`<span style="color:var(--gray-mid);font-size:12px;cursor:pointer" onclick="openShiftEdit('${dateStr}','${maid}','-')">+</span>`;
-      rows+=`<td>${badge}</td>`;
+      const shift=s?s.shift:'';
+      const opts=['เช้า','บ่าย','หยุด','ลาป่วย','ลากิจ','ลาพักร้อน'];
+      const optHtml=`<option value=""></option>`+opts.map(o=>`<option value="${o}"${o===shift?' selected':''}>${o}</option>`).join('');
+      const cellId=`sc_${dateStr}_${mi}`;
+      rows+=`<td><select class="sch-select s-${shift}" id="${cellId}" data-date="${dateStr}" data-maid="${maid}" data-orig="${shift}" onchange="onSchChange(this)">${optHtml}</select></td>`;
     });
     rows+='</tr>';
     cur.setDate(cur.getDate()+1);
@@ -388,28 +382,44 @@ function renderSchedule(){
   tbody.innerHTML=rows;
 }
 
-function openShiftEdit(date,maid,currentShift){
-  editCell={date,maid};
-  editShift=currentShift;
-  document.getElementById('shift-modal-title').textContent=maid.split(' ')[0];
-  document.getElementById('shift-modal-sub').textContent=new Date(date).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.querySelectorAll('.shift-opt').forEach(b=>{
-    b.classList.toggle('active', b.textContent.includes(currentShift));
+// ===== SCHEDULE INLINE EDIT =====
+let pendingChanges = {}; // key: date|maid → {date,maid,shift}
+
+function onSchChange(sel){
+  const date = sel.dataset.date;
+  const maid = sel.dataset.maid;
+  const shift = sel.value;
+  const orig  = sel.dataset.orig;
+  // อัปเดต class สี
+  sel.className = 'sch-select s-'+shift;
+  // เพิ่ม/ลบจาก pending
+  const key = date+'|'+maid;
+  if(shift !== orig){ pendingChanges[key]={date,maid,shift}; }
+  else { delete pendingChanges[key]; }
+  updateSaveBar();
+}
+
+function updateSaveBar(){
+  const count = Object.keys(pendingChanges).length;
+  const bar = document.getElementById('sch-save-bar');
+  bar.style.display = count>0 ? 'flex' : 'none';
+  document.getElementById('sch-changed-count').textContent = 'มีการแก้ไข '+count+' รายการ';
+}
+
+async function saveAllSchedule(){
+  const items = Object.values(pendingChanges);
+  if(!items.length) return;
+  const btn = document.querySelector('.sch-save-bar .btn');
+  btn.textContent='กำลังบันทึก...'; btn.disabled=true;
+  await apiPost({ action:'saveSchedule', items, updatedBy:'ผู้จัดการ' });
+  pendingChanges = {};
+  updateSaveBar();
+  btn.textContent='บันทึกทั้งหมด'; btn.disabled=false;
+  // อัปเดต data-orig ทุก select
+  document.querySelectorAll('.sch-select').forEach(s=>{
+    s.dataset.orig = s.value;
   });
-  document.getElementById('shift-overlay').classList.add('open');
-}
-
-function selectShift(s){
-  editShift=s;
-  document.querySelectorAll('.shift-opt').forEach(b=>b.classList.toggle('active',b.textContent.includes(s)));
-}
-
-async function saveShiftEdit(){
-  if(!editCell||!editShift||editShift==='-'){ document.getElementById('shift-overlay').classList.remove('open'); return; }
-  await apiPost({ action:'saveSchedule', items:[{date:editCell.date, maid:editCell.maid, shift:editShift}], updatedBy:'ผู้จัดการ' });
-  document.getElementById('shift-overlay').classList.remove('open');
-  await loadSchedule();
-  showMsg('บันทึกแล้ว');
+  showMsg('บันทึกเรียบร้อย '+items.length+' รายการ');
 }
 
 async function generateSchedule(){
