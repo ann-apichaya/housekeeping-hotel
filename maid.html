@@ -504,11 +504,16 @@ async function saveRoomStatus() {
   if(status==='VC'||status==='OC') {
     // คำนวณเวลาที่ใช้ — ดึง startTime จากทุกแหล่งที่เป็นไปได้
     let minutesUsed = null;
+    // ดึง startTime จาก sessionStorage ก่อน (เที่ยงที่สุด เพราะบันทึกโดย browser เอง)
+    // ถ้าไม่มีค่อย fallback ไป queue/curRoom
+    const sessionStart = sessionStorage.getItem('startTime_'+curRoom.roomNo) || '';
     const liveRoom = queue.find(q=>String(q.roomNo)===String(curRoom.roomNo));
-    const rawStart = (liveRoom && liveRoom.startTime && String(liveRoom.startTime).trim())
-      ? String(liveRoom.startTime).trim()
-      : (curRoom.startTime && String(curRoom.startTime).trim() ? String(curRoom.startTime).trim() : '');
-    console.log('[popup] roomNo=', curRoom.roomNo, 'rawStart=', rawStart, 'liveRoom=', liveRoom);
+    const rawStart = sessionStart
+      ? sessionStart
+      : (liveRoom && liveRoom.startTime && String(liveRoom.startTime).trim()
+          ? String(liveRoom.startTime).trim()
+          : (curRoom.startTime && String(curRoom.startTime).trim() ? String(curRoom.startTime).trim() : ''));
+    console.log('[popup] roomNo=', curRoom.roomNo, 'sessionStart=', sessionStart, 'rawStart=', rawStart);
     if(rawStart && rawStart !== '-' && rawStart.includes(':')) {
       const toMin = t => { const p = String(t).trim().split(':'); return parseInt(p[0])*60 + parseInt(p[1]||0); };
       const startMin   = toMin(rawStart);
@@ -551,6 +556,10 @@ async function saveRoomStatus() {
   }
 
   // สถานะอื่น (กำลังทำ, OOO) → บันทึกเลย
+  // ถ้ากด "กำลังทำ" → เก็บเวลาเริ่มไว้ใน sessionStorage ด้วย เพื่อใช้คำนวณเวลา
+  if(status==='กำลังทำ') {
+    sessionStorage.setItem('startTime_'+curRoom.roomNo, now);
+  }
   await doSave({
     action:'updateStatus',
     roomNo: curRoom.roomNo, roomType: curRoom.roomType, taskType: curRoom.taskType,
@@ -574,6 +583,8 @@ function cancelConfirm() {
 async function proceedSave() {
   document.getElementById('confirm-overlay').classList.remove('open');
   if(!pendingPayload) return;
+  // ล้าง sessionStorage ของห้องนี้หลังบันทึกเสร็จ
+  sessionStorage.removeItem('startTime_'+pendingPayload.roomNo);
   await doSave(pendingPayload, pendingNow);
   pendingPayload = null; pendingStatus = null; pendingNow = null;
 }
