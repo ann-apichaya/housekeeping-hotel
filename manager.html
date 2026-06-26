@@ -493,23 +493,73 @@ async function loadPerf(){
   const data=await get('getPerformance&start='+st+'&end='+en);
   if(!data||data.error){el.innerHTML='<div class="empty">โหลดไม่สำเร็จ</div>';return;}
   const fmtDate=d=>{const dt=new Date(d);return dt.getDate()+' '+TH_M[dt.getMonth()]+' '+(dt.getFullYear()+543);};
+  const TOTAL_ROOMS = data.totalRooms || 32;
+  const LINEN_ITEMS = ['ผ้าปูเตียง','ปลอกหมอน','ปลอกผ้านวม','ผ้าขนหนู','ผ้าเช็ดตัว','ผ้าเช็ดเท้า'];
+  const TYPE_LABEL = {DLK:'DLK',DLT:'DLT',DLF:'DLF',Suite:'Suite'};
+
   let html='';
   data.maids.forEach(m=>{
+    const pct = m.roomPercent ?? (m.rooms.length>0?Math.round((m.rooms.length/TOTAL_ROOMS)*100):0);
+    const water   = m.totalWater   ?? m.usedTotal['น้ำดื่ม']  ?? 0;
+    const minibar = m.totalMinibar ?? m.usedTotal['น้ำผลไม้'] ?? 0;
+    const rtc = m.roomTypeCounts || {};
+
+    // bar เปอร์เซ็นต์
+    const barColor = pct>=50?'var(--green-mid)':pct>=25?'#d97706':'var(--gray-mid)';
+
+    // สรุปประเภทห้อง
+    const typeSum = Object.entries(rtc).filter(([,v])=>v>0)
+      .map(([k,v])=>`<span style="background:var(--pu-light);color:var(--pu-mid);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:4px">${TYPE_LABEL[k]||k} × ${v}</span>`).join('');
+
     html+=`<div class="perf-card">
       <div class="perf-hd">
-        <div><div style="font-size:15px;font-weight:700">${m.name}</div><div style="font-size:12px;opacity:.85">ทำห้อง ${m.rooms.length} ห้อง</div></div>
-        <div style="text-align:right;font-size:12px;opacity:.85">${fmtDate(data.startDate)} - ${fmtDate(data.endDate)}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">${m.name}</div>
+          <div style="font-size:12px;opacity:.85;margin-top:2px">ทำห้องทั้งหมด ${m.rooms.length} ห้อง ในรอบนี้</div>
+        </div>
+        <div style="text-align:right;font-size:12px;opacity:.85">${fmtDate(data.startDate)}<br>${fmtDate(data.endDate)}</div>
       </div>
       <div style="padding:12px 14px">
-        ${m.rooms.length?`<div style="font-size:12px;color:var(--gray-mid);margin-bottom:8px">ห้องที่ทำ: ${m.rooms.map(r=>r.roomNo+' ('+r.roomType+')').join(', ')}</div>`:'<div style="font-size:13px;color:var(--gray-mid);margin-bottom:8px">ยังไม่มีห้องที่ทำในช่วงนี้</div>'}
-        <table class="perf-tbl"><thead><tr><th>รายการ</th><th>มาตรฐาน</th><th>ใช้จริง</th><th>ส่วนต่าง</th></tr></thead><tbody>`;
-    data.items.forEach(it=>{
-      const std=m.stdTotal[it]||0, used=m.usedTotal[it]||0, diff=used-std;
-      html+=`<tr><td>${it}</td><td>${std}</td><td class="${diff>0?'over':''}">${used}</td><td class="${diff>0?'over':diff<0?'':''}"> ${diff>0?'+'+diff+'⚠':diff<0?diff:'-'}</td></tr>`;
-    });
-    html+='</tbody></table>';
-    if(m.overItems.length) html+=`<div class="warn-box">⚠ ของใช้เกิน: ${m.overItems.map(o=>o.item+' เกิน '+o.over).join(' / ')}</div>`;
-    html+='</div></div>';
+
+        <!-- ประเภทห้องและเปอร์เซ็นต์ -->
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--gray-mid);margin-bottom:6px">ประเภทห้องที่ทำ</div>
+          <div style="margin-bottom:8px">${typeSum||'<span style="font-size:12px;color:var(--gray-mid)">-</span>'}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--gray-mid);margin-bottom:4px">สัดส่วนห้องที่รับผิดชอบ (${m.rooms.length}/${TOTAL_ROOMS} ห้อง)</div>
+          <div style="background:#e5e7eb;border-radius:20px;height:10px;overflow:hidden">
+            <div style="width:${Math.min(pct,100)}%;height:100%;background:${barColor};border-radius:20px;transition:width .4s"></div>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:${barColor};margin-top:4px">${pct}%</div>
+        </div>
+
+        <!-- น้ำดื่มและมินิบาร์ -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="background:#eff6ff;border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:11px;color:var(--blue);font-weight:600;margin-bottom:4px">น้ำดื่มที่ใช้จริง</div>
+            <div style="font-size:22px;font-weight:700;color:var(--blue-mid)">${water}</div>
+            <div style="font-size:10px;color:var(--gray-mid)">ขวด (มาตรฐาน ${m.stdTotal['น้ำดื่ม']||0})</div>
+          </div>
+          <div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:4px">น้ำผลไม้/มินิบาร์</div>
+            <div style="font-size:22px;font-weight:700;color:var(--green-mid)">${minibar}</div>
+            <div style="font-size:10px;color:var(--gray-mid)">ขวด (มาตรฐาน ${m.stdTotal['น้ำผลไม้']||0})</div>
+          </div>
+        </div>
+
+        <!-- ตารางผ้า (เฉพาะ linen) -->
+        ${m.rooms.length?`
+        <div style="font-size:12px;font-weight:600;color:var(--gray-mid);margin-bottom:6px">ของใช้ผ้า (มาตรฐาน = รวมทุกห้องที่ทำ)</div>
+        <table class="perf-tbl"><thead><tr><th>รายการ</th><th>มาตรฐานรวม</th><th>ใช้จริง</th><th>ส่วนต่าง</th></tr></thead><tbody>
+        ${LINEN_ITEMS.map(it=>{
+          const std=m.stdTotal[it]||0, used=m.usedTotal[it]||0, diff=used-std;
+          return `<tr><td>${it}</td><td>${std}</td><td class="${diff>0?'over':''}">${used}</td><td class="${diff>0?'over':''}">${diff>0?'+'+diff+' ⚠':diff<0?diff:'-'}</td></tr>`;
+        }).join('')}
+        </tbody></table>`
+        :'<div style="font-size:13px;color:var(--gray-mid)">ยังไม่มีห้องที่ทำในช่วงนี้</div>'}
+
+        ${m.overItems&&m.overItems.length?`<div class="warn-box">ของใช้เกินมาตรฐาน: ${m.overItems.map(o=>o.item+' เกิน '+o.over).join(' / ')}</div>`:''}
+      </div>
+    </div>`;
   });
   el.innerHTML=html||'<div class="empty">ไม่มีข้อมูล</div>';
 }
