@@ -502,15 +502,17 @@ async function saveRoomStatus() {
 
   // ถ้าสถานะเป็น VC หรือ OC → แสดง popup ยืนยันก่อน
   if(status==='VC'||status==='OC') {
-    // คำนวณเวลาที่ใช้
+    // คำนวณเวลาที่ใช้ — ดึง startTime จาก queue live เพราะ curRoom อาจเป็น snapshot เก่า
     let minutesUsed = null;
-    const startStr = curRoom.startTime || '';
+    const liveRoom = queue.find(q=>String(q.roomNo)===String(curRoom.roomNo));
+    const startStr = (liveRoom && liveRoom.startTime) ? liveRoom.startTime : (curRoom.startTime || '');
     if(startStr) {
       // แปลง HH:MM เป็นนาทีนับจากเที่ยงคืน
       const toMin = t => { const p=String(t).split(':'); return parseInt(p[0])*60+parseInt(p[1]||0); };
-      const startMin = toMin(startStr);
-      const endMin   = toMin(now);
-      const diff = endMin >= startMin ? endMin - startMin : (endMin + 1440) - startMin;
+      const startMin   = toMin(startStr);
+      const nowDate    = new Date();
+      const currentMin = nowDate.getHours()*60 + nowDate.getMinutes();
+      const diff = currentMin >= startMin ? currentMin - startMin : (currentMin + 1440) - startMin;
       if(diff >= 0 && diff <= 480) minutesUsed = diff; // สมเหตุสมผลไม่เกิน 8 ชม.
     }
 
